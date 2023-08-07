@@ -33,11 +33,10 @@ public class NBody {
             p.draw();
         }
         StdDraw.enableDoubleBuffering();
-        double time = 0;
-        while(time < T){
+        for(double time = 0; time < T; time += dt){
             int num = planets.length;
-            double xForces[] = new double[num];
-            double yForces[] = new double[num];
+            double[] xForces = new double[num];
+            double[] yForces = new double[num];
             for(int i=0; i<num; i++){
                 xForces[i] = planets[i].calcNetForceExertedByX(planets);
                 yForces[i] = planets[i].calcNetForceExertedByY(planets);
@@ -51,14 +50,13 @@ public class NBody {
             }
             StdDraw.show();
             StdDraw.pause(10);
-            time += dt;
         }
         StdOut.printf("%d\n", planets.length);
         StdOut.printf("%.2e\n", radius);
-        for (int i = 0; i < planets.length; i++) {
+        for (Planet planet : planets) {
             StdOut.printf("%11.4e %11.4e %11.4e %11.4e %11.4e %12s\n",
-                    planets[i].xxPos, planets[i].yyPos, planets[i].xxVel,
-                    planets[i].yyVel, planets[i].mass, planets[i].imgFileName);
+                    planet.xxPos, planet.yyPos, planet.xxVel,
+                    planet.yyVel, planet.mass, planet.imgFileName);
         }
     }
 }
