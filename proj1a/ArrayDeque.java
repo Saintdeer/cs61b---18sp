@@ -3,13 +3,13 @@ public class ArrayDeque<T> {
     private int size;
     private int sentinel; // front position.
     // (sentinel + size - 1)%items.length is last position
-    private static final int size_of_boxes = 8;
+    private static final int SIZE_OF_BOXES = 8;
 
     /**
      * Creates an empty list.
      */
     public ArrayDeque() {
-        items = (T[]) new Object[size_of_boxes];
+        items = (T[]) new Object[SIZE_OF_BOXES];
         size = 0;
         sentinel = 0;
     }
@@ -22,23 +22,25 @@ public class ArrayDeque<T> {
     }
 
     public void resize() {
-        T[] new_items = (T[]) new Object[size * 2]; // FACTOR is 2.
-        System.arraycopy(items, sentinel, new_items, sentinel, (items.length - sentinel));
-        System.arraycopy(items, 0, new_items, items.length, sentinel);
-        items = new_items;
+        T[] newItems = (T[]) new Object[size * 2]; // FACTOR is 2.
+        System.arraycopy(items, sentinel, newItems, sentinel, (items.length - sentinel));
+        System.arraycopy(items, 0, newItems, items.length, sentinel);
+        items = newItems;
     }
 
     public void addFirst(T item) {
-        if (this.isFull())
+        if (this.isFull()) {
             this.resize();
+        }
         items[sentinel - 1] = item;
         size += 1;
         sentinel = (sentinel - 1 + items.length) % items.length;
     }
 
     public void addLast(T item) {
-        if (this.isFull())
+        if (this.isFull()) {
             this.resize();
+        }
         items[sentinel + size] = item;
         size += 1;
     }
@@ -56,18 +58,19 @@ public class ArrayDeque<T> {
      */
     private void downsizingArraySize() {
         double ratio = (double) size / items.length;
-        if (ratio < 0.25 && (items.length > size_of_boxes)) {
-            T[] new_items = (T[]) new Object[items.length / 2]; // halve the items.length
+        if (ratio < 0.25 && (items.length > SIZE_OF_BOXES)) {
+            T[] newItems = (T[]) new Object[items.length / 2]; // halve the items.length
 
-            int sentinel_to_tail_of_size = Math.min((items.length - sentinel), size);
-            int last_position = (sentinel + size - 1) % items.length;
+            int sentinelToTailOfSize = Math.min((items.length - sentinel), size);
+            int lastPosition = (sentinel + size - 1) % items.length;
 
-            System.arraycopy(items, sentinel, new_items, 0, sentinel_to_tail_of_size);
+            System.arraycopy(items, sentinel, newItems, 0, sentinelToTailOfSize);
 
-            if (last_position < sentinel_to_tail_of_size)
-                System.arraycopy(items, 0, new_items, sentinel_to_tail_of_size, last_position + 1);
+            if (lastPosition < sentinelToTailOfSize) {
+                System.arraycopy(items, 0, newItems, sentinelToTailOfSize, lastPosition + 1);
+            }
 
-            items = new_items;
+            items = newItems;
             sentinel = 0;
         }
     }
@@ -80,9 +83,10 @@ public class ArrayDeque<T> {
         if (this.isEmpty()) {
             System.out.println();
         } else {
-            for (int index = sentinel, last_index = (sentinel + size - 1) % items.length; true; index = (index + 1) % items.length) {
+            int index = sentinel, lastIndex = (sentinel + size - 1) % items.length;
+            for (; true; index = (index + 1) % items.length) {
                 System.out.print(items[index]);
-                if (index < last_index) {
+                if (index < lastIndex) {
                     System.out.print(" ");
                 } else {
                     System.out.println();
@@ -93,8 +97,9 @@ public class ArrayDeque<T> {
     }
 
     public T removeFirst() {
-        if (this.isEmpty())
+        if (this.isEmpty()) {
             return null;
+        }
         T first = items[sentinel];
         items[sentinel] = null;
         size -= 1;
@@ -104,20 +109,22 @@ public class ArrayDeque<T> {
     }
 
     public T removeLast() {
-        if (this.isEmpty())
+        if (this.isEmpty()) {
             return null;
-        int last_position = (sentinel + size - 1) % items.length;
-        T last = items[last_position];
-        items[last_position] = null;
+        }
+        int lastPosition = (sentinel + size - 1) % items.length;
+        T last = items[lastPosition];
+        items[lastPosition] = null;
         size -= 1;
         this.downsizingArraySize();
         return last;
     }
 
     public T get(int index) {
-        int last_position = (sentinel + size - 1) % items.length;
-        if (this.isEmpty() || (last_position < index && index < sentinel))
+        int lastPosition = (sentinel + size - 1) % items.length;
+        if (this.isEmpty() || (lastPosition < index && index < sentinel)) {
             return null;
+        }
         return items[(sentinel + index) % items.length];
     }
 }
