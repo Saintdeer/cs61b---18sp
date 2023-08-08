@@ -17,6 +17,15 @@ public class ArrayDequeTest {
         return true;
     }
 
+    /* Utility method for printing out getItem checks. */
+    public static boolean checkItem(int expected, int actual) {
+        if (expected != actual) {
+            System.out.println("get() returned " + actual + ", but expected: " + expected);
+            return false;
+        }
+        return true;
+    }
+
     /* Prints a nice message based on whether a test passed.
      * The \n means newline. */
     public static void printTestStatus(boolean passed) {
@@ -83,9 +92,48 @@ public class ArrayDequeTest {
 
     }
 
+    public static void addAndGetTest() {
+
+        System.out.println("Running add/get test.");
+
+        ArrayDeque<Integer> ad1 = new ArrayDeque<>();
+
+        ad1.addFirst(10);
+        boolean passed = checkItem(10, ad1.get(7));
+
+        ad1.removeFirst();
+        // should be empty
+        passed = checkEmpty(true, ad1.isEmpty()) && passed;
+
+        printTestStatus(passed);
+
+    }
+
+    public static void resizeAndAddAndRemoveTest() {
+
+        System.out.println("Running resize/add/remove/downsize test.");
+
+        ArrayDeque<Integer> ad1 = new ArrayDeque<>();
+
+        int n = 17;
+        for (int i = 0; i < n; i++) {
+            ad1.addFirst(10);
+        }
+
+        for (int i = 0; i < 9; i++) {
+            ad1.removeLast();
+        }
+        ad1.removeLast();
+
+        System.out.println("resizing test passed.");
+
+    }
+
     public static void main(String[] args) {
         System.out.println("Running tests.\n");
         addIsEmptySizeTest();
         addRemoveTest();
+        addAndGetTest();
+        resizeAndAddAndRemoveTest();
     }
 }

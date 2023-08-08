@@ -43,7 +43,7 @@ public class ArrayDeque<T> {
         if (this.isFull()) {
             this.resize();
         }
-        items[(sentinel + size - 1) % items.length] = item;
+        items[(sentinel + size) % items.length] = item;
         size += 1;
     }
 
@@ -60,7 +60,7 @@ public class ArrayDeque<T> {
      */
     private void downsizingArraySize() {
         double ratio = (double) size / items.length;
-        if (ratio < 0.25 && (items.length > SIZE_OF_BOXES)) {
+        if (ratio < 0.25 && (items.length > SIZE_OF_BOXES * 2)) {
             T[] newItems = (T[]) new Object[items.length / 2]; // halve the items.length
 
             int sentinelToTailOfSize = Math.min((items.length - sentinel), size);
@@ -68,7 +68,7 @@ public class ArrayDeque<T> {
 
             System.arraycopy(items, sentinel, newItems, 0, sentinelToTailOfSize);
 
-            if (lastPosition < sentinelToTailOfSize) {
+            if (lastPosition < sentinel) {
                 System.arraycopy(items, 0, newItems, sentinelToTailOfSize, lastPosition + 1);
             }
 
@@ -127,6 +127,6 @@ public class ArrayDeque<T> {
         if (this.isEmpty() || (lastPosition < index && index < sentinel)) {
             return null;
         }
-        return items[(sentinel + index) % items.length];
+        return items[index];
     }
 }
