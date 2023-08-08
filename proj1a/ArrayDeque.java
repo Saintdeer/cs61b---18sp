@@ -14,14 +14,16 @@ public class ArrayDeque<T> {
         sentinel = 0;
     }
 
-    public ArrayDeque(ArrayDeque<T> other) {
-        items = (T[]) new Object[other.items.length];
-        size = other.size;
-        sentinel = other.sentinel;
-        System.arraycopy(other.items, 0, items, 0, other.items.length);
-    }
+    /**
+     * public ArrayDeque(ArrayDeque<T> other) {
+     * items = (T[]) new Object[other.items.length];
+     * size = other.size;
+     * sentinel = other.sentinel;
+     * System.arraycopy(other.items, 0, items, 0, other.items.length);
+     * }
+     */
 
-    public void resize() {
+    private void resize() {
         T[] newItems = (T[]) new Object[size * 2]; // FACTOR is 2.
         System.arraycopy(items, sentinel, newItems, sentinel, (items.length - sentinel));
         System.arraycopy(items, 0, newItems, items.length, sentinel);
@@ -32,7 +34,7 @@ public class ArrayDeque<T> {
         if (this.isFull()) {
             this.resize();
         }
-        items[sentinel - 1] = item;
+        items[(sentinel - 1 + items.length) % items.length] = item;
         size += 1;
         sentinel = (sentinel - 1 + items.length) % items.length;
     }
@@ -41,7 +43,7 @@ public class ArrayDeque<T> {
         if (this.isFull()) {
             this.resize();
         }
-        items[sentinel + size] = item;
+        items[(sentinel + size - 1) % items.length] = item;
         size += 1;
     }
 
