@@ -34,9 +34,13 @@ public class ArrayDeque<T> {
         if (this.isFull()) {
             this.resize();
         }
-        items[(sentinel - 1 + items.length) % items.length] = item;
+        if (this.isEmpty()) {
+            sentinel = 1;
+        }
+        int frontIndex = (sentinel - 1 + items.length) % items.length;
+        items[frontIndex] = item;
         size += 1;
-        sentinel = (sentinel - 1 + items.length) % items.length;
+        sentinel = frontIndex;
     }
 
     public void addLast(T item) {
