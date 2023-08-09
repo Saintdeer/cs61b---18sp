@@ -128,7 +128,8 @@ public class ArrayDeque<T> {
 
     public T get(int index) {
         index = sentinel + index;
-        if (this.isEmpty() || index > size) {
+        int lastIndex = (sentinel + size - 1) % items.length;
+        if (this.isEmpty() || (index < sentinel && index > lastIndex)) {
             return null;
         }
         return items[index % items.length];

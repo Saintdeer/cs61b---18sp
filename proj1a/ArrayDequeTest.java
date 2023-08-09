@@ -99,7 +99,7 @@ public class ArrayDequeTest {
         ArrayDeque<Integer> ad1 = new ArrayDeque<>();
 
         ad1.addFirst(10);
-        boolean passed = checkItem(10, ad1.get(7));
+        boolean passed = checkItem(10, ad1.get(0));
 
         ad1.removeFirst();
         // should be empty
@@ -124,6 +124,20 @@ public class ArrayDequeTest {
             ad1.removeLast();
         }
         ad1.removeLast();
+
+        ArrayDeque<Integer> ad2 = new ArrayDeque<>();
+        ad2.addLast(0);
+        ad2.addFirst(1);
+        ad2.addFirst(2);
+        ad2.addFirst(3);
+        ad2.addFirst(4);
+        ad2.removeFirst();
+        ad2.addLast(6);
+        ad2.removeLast();
+        ad2.addFirst(8);
+        ad2.removeFirst();
+        ad2.removeFirst();
+        checkItem(1, ad2.get(1));
 
         System.out.println("resizing test passed.");
 
