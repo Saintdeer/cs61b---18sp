@@ -14,15 +14,6 @@ public class ArrayDeque<T> {
         sentinel = 0;
     }
 
-    /**
-     * public ArrayDeque(ArrayDeque<T> other) {
-     * items = (T[]) new Object[other.items.length];
-     * size = other.size;
-     * sentinel = other.sentinel;
-     * System.arraycopy(other.items, 0, items, 0, other.items.length);
-     * }
-     */
-
     private void resize() {
         T[] newItems = (T[]) new Object[size * 2]; // FACTOR is 2.
         System.arraycopy(items, sentinel, newItems, sentinel, (items.length - sentinel));
@@ -34,9 +25,6 @@ public class ArrayDeque<T> {
         if (this.isFull()) {
             this.resize();
         }
-        if (this.isEmpty()) {
-            sentinel = 1;
-        }
         int frontIndex = (sentinel - 1 + items.length) % items.length;
         items[frontIndex] = item;
         size += 1;
@@ -47,7 +35,7 @@ public class ArrayDeque<T> {
         if (this.isFull()) {
             this.resize();
         }
-        items[(sentinel + size) % items.length] = item;
+        items[(this.computeLastPosition() + 1) % items.length] = item;
         size += 1;
     }
 
@@ -59,21 +47,26 @@ public class ArrayDeque<T> {
         return (size == this.items.length);
     }
 
+    private int computeLastPosition() {
+        return (sentinel + size - 1) % items.length;
+    }
+
     /**
      * halve the size of the array when ratio falls to less than 0.25.
      */
     private void downsizingArraySize() {
-        double ratio = (double) size / items.length;
+        double ratio = (double) size / items.length; // ratio of usage.
         if (ratio < 0.25 && (items.length > SIZE_OF_BOXES * 2)) {
             T[] newItems = (T[]) new Object[items.length / 2]; // halve the items.length
 
-            int sentinelToTailOfSize = Math.min((items.length - sentinel), size);
-            int lastPosition = (sentinel + size - 1) % items.length;
+            int lastPos = this.computeLastPosition(); // last position
+            boolean seeComment = lastPos < sentinel; // lastPos is on the left of sentinel or not.
+            int lengthOfRightAfterSentinel = seeComment ? (items.length - sentinel) : size;
 
-            System.arraycopy(items, sentinel, newItems, 0, sentinelToTailOfSize);
+            System.arraycopy(items, sentinel, newItems, 0, lengthOfRightAfterSentinel);
 
-            if (lastPosition < sentinel) {
-                System.arraycopy(items, 0, newItems, sentinelToTailOfSize, lastPosition + 1);
+            if (seeComment) {
+                System.arraycopy(items, 0, newItems, lengthOfRightAfterSentinel, lastPos + 1);
             }
 
             items = newItems;
@@ -89,14 +82,14 @@ public class ArrayDeque<T> {
         if (this.isEmpty()) {
             System.out.println();
         } else {
-            int index = sentinel, lastIndex = (sentinel + size - 1) % items.length;
+            int index = sentinel, lastIndex = this.computeLastPosition();
             for (; true; index = (index + 1) % items.length) {
                 System.out.print(items[index]);
                 if (index < lastIndex) {
                     System.out.print(" ");
                 } else {
                     System.out.println();
-                    break;
+                    break; // last one to print out
                 }
             }
         }
@@ -118,7 +111,7 @@ public class ArrayDeque<T> {
         if (this.isEmpty()) {
             return null;
         }
-        int lastPosition = (sentinel + size - 1) % items.length;
+        int lastPosition = this.computeLastPosition();
         T last = items[lastPosition];
         items[lastPosition] = null;
         size -= 1;
@@ -128,8 +121,7 @@ public class ArrayDeque<T> {
 
     public T get(int index) {
         index = sentinel + index;
-        int lastIndex = (sentinel + size - 1) % items.length;
-        if (this.isEmpty() || (index < sentinel && index > lastIndex)) {
+        if (this.isEmpty() || (index < sentinel && index > this.computeLastPosition())) {
             return null;
         }
         return items[index % items.length];
