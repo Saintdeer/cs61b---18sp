@@ -3,6 +3,8 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 
+import java.math.BigInteger;
+
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
@@ -38,7 +40,7 @@ public class Game {
         int length = input.length();
         char first = input.charAt(0);
         char last = input.charAt(input.length() - 1);
-        if(length < 3 || !Character.isLetter(first) || !Character.isLetter(last) ||
+        if(length < 3 || length > 21 || !Character.isLetter(first) || !Character.isLetter(last) ||
         Character.toUpperCase(first) != 'N' || Character.toUpperCase(last) != 'S'){
             System.exit(0);
         }
@@ -51,10 +53,14 @@ public class Game {
         }
 
         String number =  input.substring(1, input.length() - 1);
-        int numberInt = Integer.parseInt(number);
+        BigInteger bigInteger = new BigInteger(number);
 
+        int comparisonResult = bigInteger.compareTo(BigInteger.valueOf(upperBound));
+        if (comparisonResult > 0) {
+            System.exit(0);
+        }
         TETile[][] world = new TETile[WIDTH][HEIGHT];
-        WorldGenerator wg = new WorldGenerator(numberInt);
+        WorldGenerator wg = new WorldGenerator(bigInteger.longValue());
         TETile[][] finalWorldFrame = wg.initialize(world, WIDTH, HEIGHT);
 
         return finalWorldFrame;

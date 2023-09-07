@@ -16,7 +16,7 @@ public class WorldGenerator {
     private static Random RANDOM;
     private int direction;
 
-    public WorldGenerator(int seed) {
+    public WorldGenerator(long seed) {
         usage = 0;
         RANDOM = new Random(seed);
         direction = 1;
