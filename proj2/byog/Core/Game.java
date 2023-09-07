@@ -29,30 +29,31 @@ public class Game {
      * world. However, the behavior is slightly different. After playing with "n123sss:q", the game
      * should save, and thus if we then called playWithInputString with the string "l", we'd expect
      * to get the exact same world back again, since this corresponds to loading the saved game.
+     *
      * @param input the input string to feed to your program
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] playWithInputString(String input) {
-        // TODO: Fill out this method to run the game using the input passed in,
+        //  Fill out this method to run the game using the input passed in,
         // and return a 2D tile representation of the world that would have been
         // drawn if the same inputs had been given to playWithKeyboard().
 
         int length = input.length();
         char first = input.charAt(0);
         char last = input.charAt(input.length() - 1);
-        if(length < 3 || length > 21 || !Character.isLetter(first) || !Character.isLetter(last) ||
-        Character.toUpperCase(first) != 'N' || Character.toUpperCase(last) != 'S'){
+        if (length < 3 || length > 21 || !Character.isLetter(first) || !Character.isLetter(last)
+                || Character.toUpperCase(first) != 'N' || Character.toUpperCase(last) != 'S') {
             System.exit(0);
         }
 
         StringBuilder s = new StringBuilder();
-        for(int i = 1; i < input.length() - 1; i++){
-            if(! Character.isDigit(input.charAt(i))){
+        for (int i = 1; i < input.length() - 1; i++) {
+            if (!Character.isDigit(input.charAt(i))) {
                 System.exit(0);
             }
         }
 
-        String number =  input.substring(1, input.length() - 1);
+        String number = input.substring(1, input.length() - 1);
         BigInteger bigInteger = new BigInteger(number);
 
         int comparisonResult = bigInteger.compareTo(BigInteger.valueOf(upperBound));

@@ -32,10 +32,10 @@ public class BoringWorldDemo {
         }*/
 
 
-         Position p = new Position();
-         p.x = 14;
-         p.y = 0;
-         HexWorld.addBigHexagon(world, p, 3);
+        Position p = new Position();
+        p.x = 14;
+        p.y = 0;
+        HexWorld.addBigHexagon(world, p, 3);
 
         // draws the world to the screen
         ter.renderFrame(world);

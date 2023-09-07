@@ -1,6 +1,6 @@
 package byog.Core;
 
-import byog.TileEngine.TERenderer;
+// import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
@@ -37,13 +37,11 @@ public class WorldGenerator {
         while ((usage * 1.0 / (HEIGHT * WIDTH) < usageRate) && play) {
             int construction = uniform(RANDOM, 3);
             switch (construction) {
-                case 0 -> {
-                    play = addRoom(world, initPos);
-                }
-                case 1, 2 -> {
-                    play = addHallWay(world, initPos);
-                }
-                default -> play = addRoom(world, initPos);
+                case 0: play = addRoom(world, initPos);
+                        continue;
+                case 1: play = addHallWay(world, initPos);
+                        continue;
+                default: play = addHallWay(world, initPos);
             }
         }
         return world;
@@ -61,11 +59,12 @@ public class WorldGenerator {
         return addSpace(world, p, width, height, 0);
     }
 
-    private boolean addSpace(TETile[][] world, Position p, int width, int height, int intersection) {
+    private boolean addSpace(TETile[][] world, Position p, int width,
+                             int height, int intersection) {
         if (intersection > 0) {
             int length = uniform(RANDOM, 10, 18);
-            int xPos = p.x + 1 - (int)Math.round(length*0.5);
-            int yPos =  p.y + (int)Math.round((height-4)*0.5)*direction;
+            int xPos = p.x + 1 - (int) Math.round(length * 0.5);
+            int yPos = p.y + (int) Math.round((height - 4) * 0.5) * direction;
             Position point = new Position(Math.max(0, xPos), yPos);
             int originalDirection = direction;
             addSpace(world, point, length, 3, 0);
@@ -114,7 +113,7 @@ public class WorldGenerator {
         boolean xCloseToLowerBorder = newP.x < 3;
         boolean yCloseToLowerBorder = newP.y < 3;
 
-        if(newP.x < 0 || newP.y < 0){
+        if (newP.x < 0 || newP.y < 0) {
             return false;
         }
 
