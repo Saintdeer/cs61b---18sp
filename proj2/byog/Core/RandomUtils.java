@@ -1,5 +1,6 @@
 package byog.Core;
 
+import java.io.Serializable;
 import java.util.Random;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Random;
  * <p>
  * Adapted from https://introcs.cs.princeton.edu/java/22library/StdRandom.java.html
  */
-public class RandomUtils {
+public class RandomUtils implements Serializable {
 
     /**
      * Returns a random real number uniformly in [0, 1).

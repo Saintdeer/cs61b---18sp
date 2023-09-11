@@ -15,7 +15,6 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.math.BigInteger;
 
-
 public class Game implements Serializable {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
@@ -179,7 +178,7 @@ public class Game implements Serializable {
         try {
             // Create an ObjectOutputStream
             ObjectOutputStream outputStream = new ObjectOutputStream(
-                    new FileOutputStream("worldGenerator.ser"));
+                    new FileOutputStream("worldGenerator.txt"));
 
             // Write the object to the stream
             outputStream.writeObject(worldGenerator);
@@ -187,7 +186,7 @@ public class Game implements Serializable {
             // Close the stream
             outputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new NullPointerException();
         }
     }
 
@@ -196,7 +195,7 @@ public class Game implements Serializable {
         try {
             // Create an ObjectInputStream
             ObjectInputStream inputStream = new ObjectInputStream(
-                    new FileInputStream("worldGenerator.ser"));
+                    new FileInputStream("worldGenerator.txt"));
 
             // Read the object from the stream
             worldGenerator = (WorldGenerator) inputStream.readObject();
@@ -206,10 +205,8 @@ public class Game implements Serializable {
 
             return worldGenerator;
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new NullPointerException();
         }
-
-        return worldGenerator;
     }
 
     private WorldGenerator worldMap(BigInteger seed) {

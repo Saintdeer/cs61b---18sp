@@ -27,12 +27,11 @@ public class WorldGenerator implements Serializable {
 
     public WorldGenerator(long seed) {
         usage = 0;
-        System.out.println(seed);
         RANDOM = new Random(seed);
         direction = 1;
     }
 
-    public TETile[][] initialize(TETile[][] world, int width, int height) {
+    public void initialize(TETile[][] world, int width, int height) {
         WIDTH = width;
         HEIGHT = height;
 
@@ -63,7 +62,6 @@ public class WorldGenerator implements Serializable {
         world[self.x][self.y] = Tileset.PLAYER;
 
         map = world;
-        return world;
     }
 
     private boolean addHallWay(TETile[][] world, Position p) {
