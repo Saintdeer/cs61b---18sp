@@ -1,6 +1,7 @@
 package byog.SaveDemo;
 
 import edu.princeton.cs.introcs.StdDraw;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -80,7 +81,7 @@ public class Main {
             ObjectOutputStream os = new ObjectOutputStream(fs);
             os.writeObject(w);
             os.close();
-        }  catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("file not found");
             System.exit(0);
         } catch (IOException e) {

@@ -34,30 +34,29 @@ public class Game {
         char input;
         boolean startMenu = true;
         while (startMenu) {
-            if(StdDraw.hasNextKeyTyped()) {
+            if (StdDraw.hasNextKeyTyped()) {
                 input = Character.toUpperCase(StdDraw.nextKeyTyped());
                 if (input == 'N') {
                     mainMenu(2);
                     wg = getWorldGenerator();
                     startMenu = false;
-                }else if(input == 'L'){
+                } else if (input == 'L') {
                     wg = load();
                     startMenu = false;
                 }
             }
         }
 
-        TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
         assert wg != null;
         ter.renderFrame(wg.map);
 
         boolean attention = false;
         while (true) {
-            wg.HUD((int)Math.round(StdDraw.mouseX()), (int)Math.round(StdDraw.mouseY()), ter);
+            wg.aHUD((int) Math.round(StdDraw.mouseX()), (int) Math.round(StdDraw.mouseY()), ter);
             if (StdDraw.hasNextKeyTyped()) {
                 char key = StdDraw.nextKeyTyped();
-                if(attention && Character.toUpperCase(key) == 'Q'){
+                if (attention && Character.toUpperCase(key) == 'Q') {
                     save(wg);
                     System.exit(0);
                 }
@@ -69,9 +68,9 @@ public class Game {
         }
     }
 
-    public WorldGenerator getWorldGenerator(){
+    public WorldGenerator getWorldGenerator() {
         StringBuilder seed = new StringBuilder();
-        while(true) {
+        while (true) {
             if (StdDraw.hasNextKeyTyped()) {
                 char key = StdDraw.nextKeyTyped();
                 if (Character.toUpperCase(key) == 'S') {
@@ -80,7 +79,7 @@ public class Game {
                         System.exit(0);
                     }
                     return worldMap(new BigInteger(seed.toString()));
-                    }
+                }
                 seed.append(key);
             }
         }
@@ -92,15 +91,15 @@ public class Game {
 
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.setFont(font);
-        StdDraw.text((double) WIDTH / 2, 3.0* HEIGHT / 4, "A GAME");
+        StdDraw.text((double) WIDTH / 2, 3.0 * HEIGHT / 4, "A GAME");
         StdDraw.setFont();
 
         String text;
         if (choice == 1) {
-            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2+1, "New Game (N)");
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2 + 1, "New Game (N)");
             StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, "Load Game (L)");
-            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2-1, "Quit (Q)");
-        }else{
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2 - 1, "Quit (Q)");
+        } else {
             text = "Please enter a seed, and end up with 's'.";
             StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, text);
         }

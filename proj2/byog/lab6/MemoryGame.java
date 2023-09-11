@@ -19,7 +19,8 @@ public class MemoryGame {
     private boolean playerTurn;
     private static final char[] CHARACTERS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final String[] ENCOURAGEMENT = {"You can do this!", "I believe in you!",
-            "You got this!", "You're a star!", "Go Bears!", "Too easy for you!", "Wow, so impressive!"};
+            "You got this!", "You're a star!",
+            "Go Bears!", "Too easy for you!", "Wow, so impressive!"};
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -78,21 +79,21 @@ public class MemoryGame {
 
         StdDraw.setFont(font);
         for (int i = 0; i < length; i++) {
-            UI(true);
+            aUI(true);
             StdDraw.text(1.0 * width / 2, 1.0 * height / 2, String.valueOf((iterator.current())));
             StdDraw.show();
             StdDraw.pause(1000);
             if (i == length - 1) {
-                UI(false);
+                aUI(false);
                 break;
             }
-            UI(true);
+            aUI(true);
             StdDraw.pause(500);
             iterator.next();
         }
     }
 
-    private void UI(boolean watch) {
+    private void aUI(boolean watch) {
         StdDraw.clear(Color.BLACK);
         StdDraw.setFont(smallFont);
         StdDraw.textLeft(0, height - 1, "Round: " + round);
@@ -111,13 +112,13 @@ public class MemoryGame {
     public String solicitNCharsInput(int n) {
         // Read n letters of player input
         StdDraw.clear(Color.BLACK);
-        UI(false);
+        aUI(false);
         StringBuilder input = new StringBuilder();
 
         while (n > 0) {
             if (StdDraw.hasNextKeyTyped()) {
                 input.append(StdDraw.nextKeyTyped());
-                UI(false);
+                aUI(false);
                 drawFrame(input.toString());
                 n--;
             }
@@ -134,7 +135,7 @@ public class MemoryGame {
         while (!gameOver) {
             String str = generateRandomString(round);
             flashSequence(str);
-            UI(false);
+            aUI(false);
 
             String input = solicitNCharsInput(round);
             StdDraw.pause(500);
@@ -144,7 +145,7 @@ public class MemoryGame {
                 return;
             }
             round++;
-            UI(false);
+            aUI(false);
             drawFrame("Round: " + round);
             StdDraw.pause(1000);
         }

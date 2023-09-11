@@ -2,8 +2,6 @@ package byog.Core;
 
 import java.util.Random;
 
-import byog.Core.Position;
-
 /**
  * A library of static methods to generate pseudo-random numbers from
  * different distributions (bernoulli, uniform, gaussian, discrete,

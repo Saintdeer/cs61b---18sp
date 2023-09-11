@@ -7,7 +7,7 @@ import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.Serializable;
 import java.util.Random;
 
@@ -188,18 +188,18 @@ public class WorldGenerator implements Serializable {
         return true;
     }
 
-    public void HUD(int x, int y, TERenderer ter){
+    public void aHUD(int x, int y, TERenderer ter) {
         StdDraw.enableDoubleBuffering();
         StdDraw.setPenColor(Color.WHITE);
         StdDraw.setFont();
 
-        if(outOfIndex(x,y)){
+        if (outOfIndex(x, y)) {
             return;
         }
         TETile tile = map[x][y];
-        if(tile.equals(Tileset.WALL)){
+        if (tile.equals(Tileset.WALL)) {
             StdDraw.text(1, HEIGHT - 1, "Wall");
-        }else if(tile.equals(Tileset.FLOOR)){
+        } else if (tile.equals(Tileset.FLOOR)) {
             StdDraw.text(1, HEIGHT - 1, "Floor");
         }
         StdDraw.show();

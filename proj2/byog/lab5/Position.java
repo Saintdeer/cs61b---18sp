@@ -1,8 +1,8 @@
 package byog.lab5;
 
 public class Position {
-    public int x;
-    public int y;
+    int x;
+    int y;
 
     public static Position copy(Position p) {
         Position pos = new Position();

@@ -15,8 +15,8 @@ public class MemoryGameSolution {
     private boolean playerTurn;
     private static final char[] CHARACTERS = "abcdefghijklmnopqrstuvwxyz".toCharArray();
     private static final String[] ENCOURAGEMENT = {"You can do this!", "I believe in you!",
-                                                   "You got this!", "You're a star!", "Go Bears!",
-                                                   "Too easy for you!", "Wow, so impressive!"};
+        "You got this!", "You're a star!", "Go Bears!",
+        "Too easy for you!", "Wow, so impressive!"};
 
     public static void main(String[] args) {
         if (args.length < 1) {
