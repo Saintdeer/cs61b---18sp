@@ -6,20 +6,18 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 
-public class Game {
+
+public class Game implements Serializable {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
-    private final long upperBound = 9223372036854775807L;
     private final Font font = new Font("Monaco", Font.BOLD, 30);
+    @Serial
+    private static final long serialVersionUID = 123456789L;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -60,7 +58,7 @@ public class Game {
                     save(wg);
                     System.exit(0);
                 }
-                if (!wg.interact(key)) {
+                if (wg.interact(key)) {
                     attention = true;
                 }
             }
@@ -132,9 +130,10 @@ public class Game {
         }
 
         int digitEnd = 0, i = 1;
-        WorldGenerator wg = null;
+        WorldGenerator wg;
 
         if (first == 'L') {
+            i = 0;
             wg = load();
         } else {
             for (; i < length - 1; i++) {
@@ -147,26 +146,28 @@ public class Game {
                 }
             }
 
-            String number = input.substring(1, digitEnd);
+            String number = input.substring(1, digitEnd+1);
             BigInteger bigInteger = new BigInteger(number);
 
             wg = worldMap(bigInteger);
         }
 
+        boolean attention = false;
         if (i <= length - 1) {
-            String instructions = input.substring(i + 1, length - 1);
+            String instructions = input.substring(Math.min(i + 1, length - 1), length);
             int strLength = instructions.length();
-            for (int n = 0; n < strLength - 1; n++) {
+            for (int n = 0; n < strLength; n++) {
                 assert wg != null;
-                if (!wg.interact(instructions.charAt(n))) {
-                    if (Character.toUpperCase(instructions.charAt(n + 1)) == 'Q') {
-                        save(wg);
-                        System.exit(0);
-                    }
+                char key = instructions.charAt(n);
+                if (attention && Character.toUpperCase(key) == 'Q') {
+                    save(wg);
+                    return wg.map;
+                }
+                if (wg.interact(key)) {
+                    attention = true;
                 }
             }
         }
-        assert wg != null;
         return wg.map;
     }
 
@@ -208,6 +209,7 @@ public class Game {
     }
 
     private WorldGenerator worldMap(BigInteger seed) {
+        long upperBound = 9223372036854775807L;
         int comparisonResult = seed.compareTo(BigInteger.valueOf(upperBound));
         if (comparisonResult > 0) {
             System.exit(0);
