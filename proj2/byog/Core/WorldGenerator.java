@@ -8,7 +8,6 @@ import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Random;
 
@@ -22,9 +21,6 @@ public class WorldGenerator implements Serializable {
     private int HEIGHT;
     private static Random RANDOM;
     private int direction;
-    @Serial
-    private static final long serialVersionUID = 123456789L;
-
 
     TETile[][] map;
     Position self;

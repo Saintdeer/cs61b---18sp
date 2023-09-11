@@ -11,7 +11,6 @@ import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
-import java.io.Serial;
 import java.io.Serializable;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -23,8 +22,6 @@ public class Game implements Serializable {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
     private final Font font = new Font("Monaco", Font.BOLD, 30);
-    @Serial
-    private static final long serialVersionUID = 123456789L;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
