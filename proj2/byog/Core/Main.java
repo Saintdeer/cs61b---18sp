@@ -1,6 +1,7 @@
 package byog.Core;
 
 // import byog.TileEngine.TERenderer;
+
 import byog.TileEngine.TETile;
 // import byog.TileEngine.Tileset;
 
@@ -22,19 +23,5 @@ public class Main {
             Game game = new Game();
             game.playWithKeyboard();
         }
-
-        /*int WIDTH = 80;
-        int HEIGHT = 30;
-
-        TERenderer ter = new TERenderer();
-        ter.initialize(WIDTH, HEIGHT);
-
-        TETile[][] world = new TETile[WIDTH][HEIGHT];
-
-        WorldGenerator wg = new WorldGenerator(963);
-        wg.initialize(world, WIDTH, HEIGHT);
-
-
-        ter.renderFrame(world);*/
     }
 }

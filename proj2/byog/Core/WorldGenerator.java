@@ -1,20 +1,28 @@
 package byog.Core;
 
 // import byog.TileEngine.TERenderer;
+
+import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
 
+import java.awt.*;
+import java.io.Serializable;
 import java.util.Random;
 
 import static byog.Core.RandomUtils.uniform;
 
-public class WorldGenerator {
+public class WorldGenerator implements Serializable {
     private int usage;
     private final double usageRate = 0.7;
     private int WIDTH;
     private int HEIGHT;
     private static Random RANDOM;
     private int direction;
+
+    TETile[][] map;
+    Position self;
 
     public WorldGenerator(long seed) {
         usage = 0;
@@ -32,18 +40,27 @@ public class WorldGenerator {
                 world[x][y] = Tileset.NOTHING;
             }
         }
+
+        self = new Position(initPos.x + 1, initPos.y + 1);
+
         boolean play = true;
         int i = 1;
         while ((usage * 1.0 / (HEIGHT * WIDTH) < usageRate) && play) {
             int construction = uniform(RANDOM, 3);
             switch (construction) {
-                case 0: play = addRoom(world, initPos);
-                        continue;
-                case 1: play = addHallWay(world, initPos);
-                        continue;
-                default: play = addHallWay(world, initPos);
+                case 0:
+                    play = addRoom(world, initPos);
+                    continue;
+                case 1:
+                    play = addHallWay(world, initPos);
+                    continue;
+                default:
+                    play = addHallWay(world, initPos);
             }
         }
+        world[self.x][self.y] = Tileset.PLAYER;
+
+        map = world;
         return world;
     }
 
@@ -108,10 +125,10 @@ public class WorldGenerator {
         double leftUsageRate = usage * 1.0 / (newP.x * HEIGHT);
         boolean lowUsage = leftUsageRate < usageRate;
 
-        boolean xCloseToUpperBorder = (WIDTH - newP.x) < 3;
-        boolean yCloseToUpperBorder = (HEIGHT - newP.y) < 3;
-        boolean xCloseToLowerBorder = newP.x < 3;
-        boolean yCloseToLowerBorder = newP.y < 3;
+        boolean xCloseToUpperBorder = (WIDTH - newP.x) < 5;
+        boolean yCloseToUpperBorder = (HEIGHT - newP.y) < 5;
+        boolean xCloseToLowerBorder = newP.x < 5;
+        boolean yCloseToLowerBorder = newP.y < 5;
 
         if (newP.x < 0 || newP.y < 0) {
             return false;
@@ -147,6 +164,61 @@ public class WorldGenerator {
             }
         }
         return true;
+    }
+
+    public boolean interact(char key) {
+        switch (Character.toUpperCase(key)) {
+            case 'W':
+                move(0, 1);
+                break;
+            case 'A':
+                move(-1, 0);
+                break;
+            case 'S':
+                move(0, -1);
+                break;
+            case 'D':
+                move(1, 0);
+                break;
+            case ':':
+                return false;
+            default:
+                break;
+        }
+        return true;
+    }
+
+    public void HUD(int x, int y, TERenderer ter){
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setFont();
+
+        if(outOfIndex(x,y)){
+            return;
+        }
+        TETile tile = map[x][y];
+        if(tile.equals(Tileset.WALL)){
+            StdDraw.text(1, HEIGHT - 1, "Wall");
+        }else if(tile.equals(Tileset.FLOOR)){
+            StdDraw.text(1, HEIGHT - 1, "Floor");
+        }
+        StdDraw.show();
+    }
+
+    private void move(int x, int y) {
+        int xPos = self.x + x, yPos = self.y + y;
+        if (outOfIndex(xPos, yPos)) {
+            return;
+        }
+        TETile destination = map[xPos][yPos];
+        if (destination.equals(Tileset.WALL)) {
+            return;
+        }
+
+        map[self.x][self.y] = Tileset.FLOOR;
+        self.x = xPos;
+        self.y = yPos;
+        map[xPos][yPos] = Tileset.PLAYER;
     }
 
     private boolean outOfIndex(int x, int y) {

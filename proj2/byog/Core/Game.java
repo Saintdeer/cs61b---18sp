@@ -2,7 +2,15 @@ package byog.Core;
 
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
+import edu.princeton.cs.introcs.StdDraw;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 
 public class Game {
@@ -11,13 +19,92 @@ public class Game {
     public static final int WIDTH = 80;
     public static final int HEIGHT = 30;
     private final long upperBound = 9223372036854775807L;
-
-    //private static int[] seeds =
+    private final Font font = new Font("Monaco", Font.BOLD, 30);
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
+        StdDraw.setCanvasSize(WIDTH * 16, HEIGHT * 16);
+        StdDraw.setXscale(0, WIDTH);
+        StdDraw.setYscale(0, HEIGHT);
+        mainMenu(1);
+
+        WorldGenerator wg = null;
+        char input;
+        boolean startMenu = true;
+        while (startMenu) {
+            if(StdDraw.hasNextKeyTyped()) {
+                input = Character.toUpperCase(StdDraw.nextKeyTyped());
+                if (input == 'N') {
+                    mainMenu(2);
+                    wg = getWorldGenerator();
+                    startMenu = false;
+                }else if(input == 'L'){
+                    wg = load();
+                    startMenu = false;
+                }
+            }
+        }
+
+        TERenderer ter = new TERenderer();
+        ter.initialize(WIDTH, HEIGHT);
+        assert wg != null;
+        ter.renderFrame(wg.map);
+
+        boolean attention = false;
+        while (true) {
+            wg.HUD((int)Math.round(StdDraw.mouseX()), (int)Math.round(StdDraw.mouseY()), ter);
+            if (StdDraw.hasNextKeyTyped()) {
+                char key = StdDraw.nextKeyTyped();
+                if(attention && Character.toUpperCase(key) == 'Q'){
+                    save(wg);
+                    System.exit(0);
+                }
+                if (!wg.interact(key)) {
+                    attention = true;
+                }
+            }
+            ter.renderFrame(wg.map);
+        }
+    }
+
+    public WorldGenerator getWorldGenerator(){
+        StringBuilder seed = new StringBuilder();
+        while(true) {
+            if (StdDraw.hasNextKeyTyped()) {
+                char key = StdDraw.nextKeyTyped();
+                if (Character.toUpperCase(key) == 'S') {
+                    String seeds = seed.toString();
+                    if (seeds.isEmpty()) {
+                        System.exit(0);
+                    }
+                    return worldMap(new BigInteger(seed.toString()));
+                    }
+                seed.append(key);
+            }
+        }
+    }
+
+    private void mainMenu(int choice) {
+        StdDraw.clear(Color.BLACK);
+        StdDraw.enableDoubleBuffering();
+
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setFont(font);
+        StdDraw.text((double) WIDTH / 2, 3.0* HEIGHT / 4, "A GAME");
+        StdDraw.setFont();
+
+        String text;
+        if (choice == 1) {
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2+1, "New Game (N)");
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, "Load Game (L)");
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2-1, "Quit (Q)");
+        }else{
+            text = "Please enter a seed, and end up with 's'.";
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, text);
+        }
+        StdDraw.show();
     }
 
     /**
@@ -39,31 +126,96 @@ public class Game {
         // drawn if the same inputs had been given to playWithKeyboard().
 
         int length = input.length();
-        char first = input.charAt(0);
-        char last = input.charAt(input.length() - 1);
-        if (length < 3 || length > 21 || !Character.isLetter(first) || !Character.isLetter(last)
-                || Character.toUpperCase(first) != 'N' || Character.toUpperCase(last) != 'S') {
+        char first = Character.toUpperCase(input.charAt(0));
+
+        if (length < 3 || (first != 'N' && first != 'L')) {
             System.exit(0);
         }
 
-        StringBuilder s = new StringBuilder();
-        for (int i = 1; i < input.length() - 1; i++) {
-            if (!Character.isDigit(input.charAt(i))) {
-                System.exit(0);
+        int digitEnd = 0, i = 1;
+        WorldGenerator wg = null;
+
+        if (first == 'L') {
+            wg = load();
+        } else {
+            for (; i < length - 1; i++) {
+                if (Character.isDigit(input.charAt(i))) {
+                    digitEnd++;
+                } else if (Character.toUpperCase(input.charAt(i)) == 'S') {
+                    break;
+                } else {
+                    System.exit(0);
+                }
             }
+
+            String number = input.substring(1, digitEnd);
+            BigInteger bigInteger = new BigInteger(number);
+
+            wg = worldMap(bigInteger);
         }
 
-        String number = input.substring(1, input.length() - 1);
-        BigInteger bigInteger = new BigInteger(number);
+        if (i <= length - 1) {
+            String instructions = input.substring(i + 1, length - 1);
+            int strLength = instructions.length();
+            for (int n = 0; n < strLength - 1; n++) {
+                assert wg != null;
+                if (!wg.interact(instructions.charAt(n))) {
+                    if (Character.toUpperCase(instructions.charAt(n + 1)) == 'Q') {
+                        save(wg);
+                        System.exit(0);
+                    }
+                }
+            }
+        }
+        assert wg != null;
+        return wg.map;
+    }
 
-        int comparisonResult = bigInteger.compareTo(BigInteger.valueOf(upperBound));
+    private void save(WorldGenerator worldGenerator) {
+        try {
+            // Create an ObjectOutputStream
+            ObjectOutputStream outputStream = new ObjectOutputStream(
+                    new FileOutputStream("worldGenerator.ser"));
+
+            // Write the object to the stream
+            outputStream.writeObject(worldGenerator);
+
+            // Close the stream
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private WorldGenerator load() {
+        WorldGenerator worldGenerator = null;
+        try {
+            // Create an ObjectInputStream
+            ObjectInputStream inputStream = new ObjectInputStream(
+                    new FileInputStream("worldGenerator.ser"));
+
+            // Read the object from the stream
+            worldGenerator = (WorldGenerator) inputStream.readObject();
+
+            // Close the stream
+            inputStream.close();
+
+            return worldGenerator;
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return worldGenerator;
+    }
+
+    private WorldGenerator worldMap(BigInteger seed) {
+        int comparisonResult = seed.compareTo(BigInteger.valueOf(upperBound));
         if (comparisonResult > 0) {
             System.exit(0);
         }
         TETile[][] world = new TETile[WIDTH][HEIGHT];
-        WorldGenerator wg = new WorldGenerator(bigInteger.longValue());
-        TETile[][] finalWorldFrame = wg.initialize(world, WIDTH, HEIGHT);
-
-        return finalWorldFrame;
+        WorldGenerator wg = new WorldGenerator(seed.longValue());
+        wg.initialize(world, WIDTH, HEIGHT);
+        return wg;
     }
 }
