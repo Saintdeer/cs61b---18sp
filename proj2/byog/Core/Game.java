@@ -128,7 +128,7 @@ public class Game implements Serializable {
         int length = input.length();
         char first = Character.toUpperCase(input.charAt(0));
 
-        if (length < 3 || (first != 'N' && first != 'L')) {
+        if (first != 'N' && first != 'L') {
             System.exit(0);
         }
 
