@@ -6,7 +6,14 @@ import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.io.*;
+
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.Serial;
+import java.io.Serializable;
+import java.io.IOException;
 import java.math.BigInteger;
 
 
@@ -146,7 +153,7 @@ public class Game implements Serializable {
                 }
             }
 
-            String number = input.substring(1, digitEnd+1);
+            String number = input.substring(1, digitEnd + 1);
             BigInteger bigInteger = new BigInteger(number);
 
             wg = worldMap(bigInteger);
