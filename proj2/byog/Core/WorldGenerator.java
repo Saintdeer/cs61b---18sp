@@ -1,33 +1,36 @@
 package byog.Core;
 
-// import byog.TileEngine.TERenderer;
-
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.io.Serializable;
 import java.util.Random;
 
 import static byog.Core.RandomUtils.uniform;
 
-
 public class WorldGenerator implements Serializable {
     private int usage;
-    private final double usageRate = 0.7;
+    private final double usageRate = 0.8;
     private int WIDTH;
     private int HEIGHT;
     private static Random RANDOM;
+    private final Random random;
     private int direction;
 
     TETile[][] map;
     Position self;
+    Position ghost;
+    boolean hasGhost = false;
+    boolean hasWater = false;
 
     public WorldGenerator(long seed) {
         usage = 0;
-        RANDOM = new Random(seed);
+        random = new Random(seed);
+        RANDOM = random;
         direction = 1;
     }
 
@@ -35,7 +38,7 @@ public class WorldGenerator implements Serializable {
         WIDTH = width;
         HEIGHT = height;
 
-        Position initPos = new Position(uniform(RANDOM, 10), uniform(RANDOM, 10));
+        Position initPos = new Position(uniform(random, 10), uniform(random, 10));
         for (int x = 0; x < width; x += 1) {
             for (int y = 0; y < height; y += 1) {
                 world[x][y] = Tileset.NOTHING;
@@ -47,7 +50,7 @@ public class WorldGenerator implements Serializable {
         boolean play = true;
         int i = 1;
         while ((usage * 1.0 / (HEIGHT * WIDTH) < usageRate) && play) {
-            int construction = uniform(RANDOM, 3);
+            int construction = uniform(random, 3);
             switch (construction) {
                 case 0:
                     play = addRoom(world, initPos);
@@ -59,19 +62,23 @@ public class WorldGenerator implements Serializable {
                     play = addHallWay(world, initPos);
             }
         }
+        if (!hasWater) {
+            world[initPos.x][initPos.y] = Tileset.WATER;
+            hasWater = true;
+        }
         world[self.x][self.y] = Tileset.PLAYER;
 
         map = world;
     }
 
     private boolean addHallWay(TETile[][] world, Position p) {
-        int length = uniform(RANDOM, 10, 18);
+        int length = uniform(random, 10, 18);
         int width = 3;
-        return addSpace(world, p, width, length, uniform(RANDOM, 3));
+        return addSpace(world, p, width, length, uniform(random, 3));
     }
 
     private boolean addRoom(TETile[][] world, Position p) {
-        int width = uniform(RANDOM, 6, 11);
+        int width = uniform(random, 6, 11);
         int height = 15 - width;
         return addSpace(world, p, width, height, 0);
     }
@@ -79,7 +86,7 @@ public class WorldGenerator implements Serializable {
     private boolean addSpace(TETile[][] world, Position p, int width,
                              int height, int intersection) {
         if (intersection > 0) {
-            int length = uniform(RANDOM, 10, 18);
+            int length = uniform(random, 10, 18);
             int xPos = p.x + 1 - (int) Math.round(length * 0.5);
             int yPos = p.y + (int) Math.round((height - 4) * 0.5) * direction;
             Position point = new Position(Math.max(0, xPos), yPos);
@@ -109,12 +116,29 @@ public class WorldGenerator implements Serializable {
                 break;
             }
             if (world[x][y] == Tileset.FLOOR) {
-                continue;
+                if ((usage * 1.0 / (HEIGHT * WIDTH) > usageRate * 0.9) && !hasWater) {
+                    world[x][y] = Tileset.WATER;
+                    hasWater = true;
+                } else {
+                    continue;
+                }
             }
             if (wall || i == 0 || i == (length - 1) || outOfIndex(x + 1, y)) {
+                if (world[x][y].equals(Tileset.WATER)) {
+                    hasWater = false;
+                }
                 world[x][y] = Tileset.WALL;
             } else {
-                world[x][y] = Tileset.FLOOR;
+                if ((usage * 1.0 / (HEIGHT * WIDTH) > usageRate * 0.9) && !hasWater) {
+                    world[x][y] = Tileset.WATER;
+                    hasWater = true;
+                } else if ((usage * 1.0 / (HEIGHT * WIDTH) > usageRate * 0.8) && !hasGhost) {
+                    world[x][y] = Tileset.GHOST;
+                    ghost = new Position(x, y);
+                    hasGhost = true;
+                } else {
+                    world[x][y] = Tileset.FLOOR;
+                }
             }
             usage += 1;
         }
@@ -144,7 +168,7 @@ public class WorldGenerator implements Serializable {
             }
 
             if ((!xCloseToLowerBorder && lowUsage) || xCloseToUpperBorder) {
-                origin.changeToTopLeft(newP, uniform(RANDOM, 2));
+                origin.changeToTopLeft(newP, uniform(random, 2));
             } else {
                 origin.changeToTopRight(newP);
             }
@@ -158,7 +182,7 @@ public class WorldGenerator implements Serializable {
             }
 
             if ((!xCloseToLowerBorder && lowUsage) || xCloseToUpperBorder) {
-                origin.changeToLowLeft(newP, uniform(RANDOM, 2));
+                origin.changeToLowLeft(newP, uniform(random, 2));
             } else {
                 origin.changeToLowRight(newP);
             }
@@ -167,25 +191,66 @@ public class WorldGenerator implements Serializable {
     }
 
     public boolean interact(char key) {
+        TETile character = Tileset.PLAYER;
         switch (Character.toUpperCase(key)) {
             case 'W':
-                move(0, 1);
+                move(0, 1, character);
                 break;
             case 'A':
-                move(-1, 0);
+                move(-1, 0, character);
                 break;
             case 'S':
-                move(0, -1);
+                move(0, -1, character);
                 break;
             case 'D':
-                move(1, 0);
+                move(1, 0, character);
                 break;
             case ':':
                 return true;
             default:
                 break;
         }
+        if (hasGhost && uniform(random, 0, 2) == 0) {
+            move(uniform(random, -4, 5), uniform(random, -4, 5), Tileset.GHOST);
+        }
+
+        checkGameOver();
         return false;
+    }
+
+    private void checkGameOver() {
+        int xLength = Math.abs(self.x - ghost.x);
+        int yLength = Math.abs(self.y - ghost.y);
+        if (Math.sqrt(Math.pow(xLength, 2) + Math.pow(yLength, 2)) < 5) {
+            endUI(false);
+        }
+
+        int x = self.x;
+        int y = self.y;
+        TETile w = Tileset.WATER;
+        boolean sign = map[x - 1][y].equals(w) || map[x + 1][y].equals(w)
+                || map[x][y + 1].equals(w) || map[x][y - 1].equals(w);
+        if (sign) {
+            endUI(true);
+        }
+    }
+
+    private void endUI(boolean win) {
+        StdDraw.clear(Color.BLACK);
+        StdDraw.setPenColor(Color.WHITE);
+        StdDraw.setFont(new Font("Monaco", Font.BOLD, 30));
+
+        String text;
+        if (win) {
+            text = "Congratulations! you find water and survived!";
+        } else {
+            text = "good bye ~ ~ the ghost finds you ~ ~";
+        }
+        StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, text);
+        StdDraw.show();
+        StdDraw.pause(3 * 1000);
+        Game game = new Game();
+        game.playWithKeyboard();
     }
 
     public void aHUD(int x, int y, TERenderer ter) {
@@ -196,29 +261,31 @@ public class WorldGenerator implements Serializable {
         if (outOfIndex(x, y)) {
             return;
         }
-        TETile tile = map[x][y];
-        if (tile.equals(Tileset.WALL)) {
-            StdDraw.text(1, HEIGHT - 1, "Wall");
-        } else if (tile.equals(Tileset.FLOOR)) {
-            StdDraw.text(1, HEIGHT - 1, "Floor");
-        }
+
+        StdDraw.text(1, HEIGHT - 1, map[x][y].description());
         StdDraw.show();
     }
 
-    private void move(int x, int y) {
-        int xPos = self.x + x, yPos = self.y + y;
+    private void move(int x, int y, TETile character) {
+        Position p;
+        if (character.equals(Tileset.PLAYER)) {
+            p = self;
+        } else {
+            p = ghost;
+        }
+        int xPos = p.x + x, yPos = p.y + y;
         if (outOfIndex(xPos, yPos)) {
             return;
         }
         TETile destination = map[xPos][yPos];
-        if (destination.equals(Tileset.WALL)) {
+        if (!destination.equals(Tileset.FLOOR)) {
             return;
         }
 
-        map[self.x][self.y] = Tileset.FLOOR;
-        self.x = xPos;
-        self.y = yPos;
-        map[xPos][yPos] = Tileset.PLAYER;
+        map[p.x][p.y] = Tileset.FLOOR;
+        p.x = xPos;
+        p.y = yPos;
+        map[xPos][yPos] = character;
     }
 
     private boolean outOfIndex(int x, int y) {

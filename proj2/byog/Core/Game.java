@@ -95,14 +95,15 @@ public class Game implements Serializable {
         StdDraw.text((double) WIDTH / 2, 3.0 * HEIGHT / 4, "A GAME");
         StdDraw.setFont();
 
-        String text;
         if (choice == 1) {
             StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2 + 1, "New Game (N)");
             StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, "Load Game (L)");
             StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2 - 1, "Quit (Q)");
         } else {
-            text = "Please enter a seed, and end up with 's'.";
-            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2, text);
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2 + 1,
+                    "Please enter a seed, and end up with 's'.");
+            StdDraw.text((double) WIDTH / 2, (double) HEIGHT / 2 - 1,
+                    "Your goal is trying to find water; take care of mysterious creature");
         }
         StdDraw.show();
     }
