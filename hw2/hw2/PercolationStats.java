@@ -18,7 +18,7 @@ public class PercolationStats {
             while (!grid.percolates()) {
                 grid.open(StdRandom.uniform(0, N), StdRandom.uniform(0, N));
             }
-            num[i] = 0.1 * grid.numberOfOpenSites() / sum;
+            num[i] = 1.0 * grid.numberOfOpenSites() / sum;
         }
     }   // perform T independent experiments on an N-by-N grid
 
