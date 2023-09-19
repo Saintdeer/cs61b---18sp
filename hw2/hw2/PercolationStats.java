@@ -31,7 +31,7 @@ public class PercolationStats {
     }                                         // sample standard deviation of percolation threshold
 
     private double computeRest() {
-        return 1.96 * Math.sqrt(stddev()) / Math.sqrt(num.length);
+        return 1.96 * stddev() / Math.sqrt(num.length);
     }
 
     public double confidenceLow() {
