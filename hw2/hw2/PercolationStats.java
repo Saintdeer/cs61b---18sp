@@ -11,7 +11,6 @@ public class PercolationStats {
             throw new IllegalArgumentException();
         }
         num = new int[T];
-        int n2 = N * N;
         int t = T;
         if (T < 30) {
             t = 30;
@@ -19,7 +18,7 @@ public class PercolationStats {
         for (int i = 0; i < t; i++) {
             Percolation grid = pf.make(N);
             while (!grid.percolates()) {
-                grid.open(StdRandom.uniform(0, n2), StdRandom.uniform(0, n2));
+                grid.open(StdRandom.uniform(0, N), StdRandom.uniform(0, N));
             }
             num[i] = grid.numberOfOpenSites();
         }

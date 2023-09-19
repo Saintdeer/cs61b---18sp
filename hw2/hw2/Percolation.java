@@ -85,7 +85,11 @@ public class Percolation {
     }           // number of open sites
 
     public boolean percolates() {
-        return nxn.connected(0, length * length - 1);
+        boolean p = nxn.connected(0, length * length - 1);
+        if (length == 1) {
+            return p && isOpen(0, 0);
+        }
+        return p;
     }              // does the system percolate?
 
     public static void main(String[] args) {
