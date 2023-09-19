@@ -12,8 +12,11 @@ public class PercolationStats {
         }
         num = new int[T];
         int n2 = N * N;
-        
-        for (int i = 0; i < T; i++) {
+        int t = T;
+        if (T < 30) {
+            t = 30;
+        }
+        for (int i = 0; i < t; i++) {
             Percolation grid = pf.make(N);
             while (!grid.percolates()) {
                 grid.open(StdRandom.uniform(0, n2), StdRandom.uniform(0, n2));
