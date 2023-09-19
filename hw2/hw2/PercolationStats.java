@@ -10,11 +10,11 @@ public class PercolationStats {
         if (N < 1 || T < 1) {
             throw new IllegalArgumentException();
         }
-        num = new int[T];
         int t = T;
         if (T < 30) {
             t = 30;
         }
+        num = new int[t];
         for (int i = 0; i < t; i++) {
             Percolation grid = pf.make(N);
             while (!grid.percolates()) {
