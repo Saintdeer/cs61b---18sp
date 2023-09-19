@@ -4,20 +4,21 @@ import edu.princeton.cs.introcs.StdRandom;
 import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
-    private int[] num;
+    private double[] num;
 
     public PercolationStats(int N, int T, PercolationFactory pf) {
         if (N < 1 || T < 1) {
             throw new IllegalArgumentException();
         }
 
-        num = new int[T];
+        num = new double[T];
+        int sum = N * N;
         for (int i = 0; i < T; i++) {
             Percolation grid = pf.make(N);
             while (!grid.percolates()) {
                 grid.open(StdRandom.uniform(0, N), StdRandom.uniform(0, N));
             }
-            num[i] = grid.numberOfOpenSites();
+            num[i] = 0.1 * grid.numberOfOpenSites() / sum;
         }
     }   // perform T independent experiments on an N-by-N grid
 
