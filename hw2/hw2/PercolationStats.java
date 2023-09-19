@@ -12,6 +12,7 @@ public class PercolationStats {
         }
         num = new int[T];
         int n2 = N * N;
+        
         for (int i = 0; i < T; i++) {
             Percolation grid = pf.make(N);
             while (!grid.percolates()) {
