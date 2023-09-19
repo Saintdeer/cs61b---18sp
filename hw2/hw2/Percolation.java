@@ -3,10 +3,10 @@ package hw2;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private final WeightedQuickUnionUF nxn;
-    private final WeightedQuickUnionUF shadow;
-    private final int[] sites;
-    private final int length;
+    private WeightedQuickUnionUF nxn;
+    private WeightedQuickUnionUF shadow;
+    private int[] sites;
+    private int length;
     private int size;
 
     public Percolation(int N) {
@@ -15,11 +15,11 @@ public class Percolation {
         }
         nxn = new WeightedQuickUnionUF(N * N);
         shadow = new WeightedQuickUnionUF(N * N);
-        for (int i = 0; i < N - 1; i++) {
+        for (int i = 0; (i + 1) < N; i++) {
             nxn.union(i, i + 1);
             shadow.union(i, i + 1);
         }
-        for (int i = N * (N - 1); i < N * N - 1; i++) {
+        for (int i = N * (N - 1); (i + 1) < N * N; i++) {
             nxn.union(i, i + 1);
         }
         length = N;

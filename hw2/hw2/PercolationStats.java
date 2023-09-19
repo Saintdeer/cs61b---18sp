@@ -4,11 +4,11 @@ import edu.princeton.cs.introcs.StdRandom;
 import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
-    private final int[] num;
+    private int[] num;
 
     public PercolationStats(int N, int T, PercolationFactory pf) {
-        if (N < 30) {
-            throw new IllegalArgumentException("N is at least 30.");
+        if (N < 1 || T < 1) {
+            throw new IllegalArgumentException();
         }
         num = new int[T];
         int n2 = N * N;
