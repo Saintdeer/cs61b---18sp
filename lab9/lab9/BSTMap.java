@@ -137,6 +137,38 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
             return null;
         }
         size -= 1;
+        Node newN = findSubstituteNode(kn);
+        substituteNode(newN, key);
+        return kn.value;
+    }
+
+    private void substituteNode(Node newN, K key) {
+        if (parentOfKn == null) {
+            if (newN == null) {
+                root = null;
+            } else {
+                root.key = newN.key;
+                root.value = newN.value;
+            }
+        } else if (parentOfKn.left != null && parentOfKn.left.key.compareTo(key) == 0) {
+            if (newN == null) {
+                parentOfKn.left = null;
+            } else {
+                parentOfKn.left.key = newN.key;
+                parentOfKn.left.value = newN.value;
+            }
+        } else {
+            if (newN == null) {
+                parentOfKn.right = null;
+            } else {
+                parentOfKn.right.key = newN.key;
+                parentOfKn.right.value = newN.value;
+            }
+        }
+        parentOfKn = null;
+    }
+
+    private Node findSubstituteNode(Node kn) {
         Node newN = findLeftRightChild(kn);
         if (newN == null) {
             newN = findRightLeftChild(kn);
@@ -144,18 +176,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         if (newN == null) {
             newN = findLeftOrRightChild(kn);
         }
-        if (newN == null) {
-            newN = kn;
-            if (parentOfKn == null) {
-                return newN.value;
-            } else if (parentOfKn.left.key.compareTo(key) == 0) {
-                parentOfKn.left = null;
-            } else {
-                parentOfKn.right = null;
-            }
-            parentOfKn = null;
-        }
-        return newN.value;
+        return newN;
     }
 
     private Node findLeftOrRightChild(Node n) {
