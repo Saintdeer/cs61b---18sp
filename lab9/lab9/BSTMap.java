@@ -29,8 +29,6 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     private Node root;  /* Root node of the tree. */
     private int size; /* The number of key-value pairs in the tree */
 
-    private Node parentOfKn = null;
-
     /* Creates an empty BSTMap. */
     public BSTMap() {
         this.clear();
