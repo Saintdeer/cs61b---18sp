@@ -230,12 +230,4 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     public Iterator<K> iterator() {
         return keySet().iterator();
     }
-
-    public static void main(String[] args) {
-        BSTMap<String, Integer> bstmap = new BSTMap<>();
-        
-        bstmap.put("zebra", 90);
-        bstmap.remove("zebra", 90);
-        System.out.println(bstmap.size());
-    }
 }
