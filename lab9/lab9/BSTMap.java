@@ -146,7 +146,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
         if (newN == null) {
             newN = kn;
-            if (parentOfKn.left.key.compareTo(key) == 0) {
+            if (parentOfKn == null) {
+                return newN.value;
+            } else if (parentOfKn.left.key.compareTo(key) == 0) {
                 parentOfKn.left = null;
             } else {
                 parentOfKn.right = null;
@@ -227,5 +229,13 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     @Override
     public Iterator<K> iterator() {
         return keySet().iterator();
+    }
+
+    public static void main(String[] args) {
+        BSTMap<String, Integer> bstmap = new BSTMap<>();
+        
+        bstmap.put("zebra", 90);
+        bstmap.remove("zebra", 90);
+        System.out.println(bstmap.size());
     }
 }
