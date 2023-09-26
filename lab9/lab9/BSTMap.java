@@ -132,109 +132,12 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
      */
     @Override
     public V remove(K key) {
-        Node kn = findKeyNode(key, root);
-        if (kn == null) {
-            return null;
+        V v = get(key);
+        if (v != null) {
+            size -= 1;
+            removeNode(root, key);
         }
-        size -= 1;
-        Node newN = findSubstituteNode(kn);
-        if (newN != null && kn != root) {
-            remove(newN.key);
-        }
-        substituteNode(newN, key);
-        return kn.value;
-    }
-
-    private void substituteNode(Node newN, K key) {
-        if (parentOfKn == null) {
-            if (newN == null) {
-                root = null;
-            } else {
-                root.key = newN.key;
-                root.value = newN.value;
-            }
-        } else if (parentOfKn.left != null && parentOfKn.left.key.compareTo(key) == 0) {
-            if (newN == null) {
-                parentOfKn.left = null;
-            } else {
-                parentOfKn.left.key = newN.key;
-                parentOfKn.left.value = newN.value;
-            }
-        } else {
-            if (newN == null) {
-                parentOfKn.right = null;
-            } else {
-                parentOfKn.right.key = newN.key;
-                parentOfKn.right.value = newN.value;
-            }
-        }
-        parentOfKn = null;
-    }
-
-    private Node findSubstituteNode(Node kn) {
-        Node newN = findLeftRightChild(kn);
-        if (newN == null) {
-            newN = findRightLeftChild(kn);
-        }
-        if (newN == null) {
-            newN = findLeftOrRightChild(kn);
-        }
-        return newN;
-    }
-
-    private Node findLeftOrRightChild(Node n) {
-        Node newN;
-        if (n.left == null) {
-            if (n.right == null) {
-                return null;
-            }
-            newN = n.right;
-            n.right = null;
-        } else {
-            newN = n.left;
-            n.left = null;
-        }
-        return newN;
-    }
-
-    private Node findLeftRightChild(Node n) {
-        if (n.left != null && n.left.right != null) {
-            Node newN = n.left.right;
-            n.left.right = null;
-            return newN;
-        }
-        return null;
-    }
-
-    private Node findRightLeftChild(Node n) {
-        if (n.right != null && n.right.left != null) {
-            Node newN = n.right.left;
-            n.right.left = null;
-            return newN;
-        }
-        return null;
-    }
-
-    private Node findKeyNode(K key, Node n) {
-        if (n == null) {
-            return null;
-        }
-
-        int compare = key.compareTo(n.key);
-        Node kn;
-
-        if (compare < 0) {
-            kn = findKeyNode(key, n.left);
-        } else if (compare == 0) {
-            return n;
-        } else {
-            kn = findKeyNode(key, n.right);
-        }
-
-        if (parentOfKn == null && kn != null) {
-            parentOfKn = n;
-        }
-        return kn;
+        return v;
     }
 
     /**
@@ -244,10 +147,45 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
      **/
     @Override
     public V remove(K key, V value) {
-        if (get(key) != value) {
+        if (get(key) == null && get(key) != value) {
             return null;
         }
-        return remove(key);
+        size -= 1;
+        removeNode(root, key);
+        return value;
+    }
+
+    private Node removeNode(Node node, K key) {
+        if (node == null) {
+            return null;
+        }
+
+        int cmp = key.compareTo(node.key);
+        if (cmp < 0) {
+            node.left = removeNode(node.left, key);
+        } else if (cmp > 0) {
+            node.right = removeNode(node.right, key);
+        } else {
+            if (node.left == null) {
+                return node.right;
+            } else if (node.right == null) {
+                return node.left;
+            } else {
+                Node successor = findMinNode(node.right);
+                node.key = successor.key;
+                node.value = successor.value;
+                node.right = removeNode(node.right, successor.key);
+            }
+        }
+
+        return node;
+    }
+
+    private Node findMinNode(Node node) {
+        while (node.left != null) {
+            node = node.left;
+        }
+        return node;
     }
 
     @Override
