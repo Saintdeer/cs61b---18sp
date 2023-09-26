@@ -138,6 +138,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
         size -= 1;
         Node newN = findSubstituteNode(kn);
+        if (newN != null && kn != root) {
+            remove(newN.key);
+        }
         substituteNode(newN, key);
         return kn.value;
     }
