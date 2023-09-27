@@ -48,7 +48,7 @@ public class TestComplexOomage {
                 lst.add(255);
             }
             deadlyList.add(new ComplexOomage(lst));
-        }
+        }//which caused Integer overflow when computing hash code.
 
         assertTrue(OomageTestUtility.haveNiceHashCodeSpread(deadlyList, 10));
     }
