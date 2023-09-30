@@ -1,4 +1,5 @@
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -109,10 +110,10 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
 
         /* Your code here. */
         int parent = parentIndex(index);
-        if(parent == 0){
+        if (parent == 0) {
             return;
         }
-        if(contents[index].myPriority < contents[parent].myPriority){
+        if (contents[index].myPriority < contents[parent].myPriority) {
             //System.out.println("swap"+index+"and"+parent);
             swap(index, parent);
             swim(parent);
@@ -127,19 +128,20 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         validateSinkSwimArg(index);
 
         /* Your code here. */
-        if(!hasChild(index)){
+        if (!hasChild(index)) {
             return;
         }
         int smallestIndex = min(leftIndex(index), rightIndex(index));
-        if(contents[index].myPriority > contents[smallestIndex].myPriority){
+        if (contents[index].myPriority > contents[smallestIndex].myPriority) {
             swap(index, smallestIndex);
             sink(smallestIndex);
         }
     }
 
-    private boolean hasChild(int index){
+    private boolean hasChild(int index) {
         return (leftIndex(index) <= size) || ((rightIndex(index) <= size));
     }
+
     /**
      * Inserts an item with the given priority value. This is enqueue, or offer.
      * To implement this method, add it to the end of the ArrayList, then swim it.
@@ -165,7 +167,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public T peek() {
         /* Your code here! */
-        if(size > 0){
+        if (size > 0) {
             return contents[1].myItem;
         }
         return null;
@@ -183,7 +185,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public T removeMin() {
         /* Your code here! */
-        if(size > 0){
+        if (size > 0) {
             T smallest = peek();
             swap(1, size);
             contents[size] = null;
@@ -214,12 +216,12 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public void changePriority(T item, double priority) {
         /* Your code here! */
-        if(size < 1){
+        if (size < 1) {
             return;
         }
-        for(int index = 1; index <= size; index++){
+        for (int index = 1; index <= size; index++) {
             Node nod = contents[index];
-            if(nod.myItem.equals(item)){
+            if (nod.myItem.equals(item)) {
                 nod.myPriority = priority;
             }
         }
@@ -263,7 +265,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
             throw new IllegalArgumentException("Cannot sink or swim nodes with index 0 or less");
         }
         if (index > size) {
-            throw new IllegalArgumentException("Cannot sink or swim nodes with index greater than current size.");
+            throw new IllegalArgumentException
+            ("Cannot sink or swim nodes with index greater than current size.");
         }
         if (contents[index] == null) {
             throw new IllegalArgumentException("Cannot sink or swim a null node.");
@@ -279,7 +282,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
             myPriority = priority;
         }
 
-        public T item(){
+        public T item() {
             return myItem;
         }
 
@@ -294,7 +297,9 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     }
 
 
-    /** Helper function to resize the backing array when necessary. */
+    /**
+     * Helper function to resize the backing array when necessary.
+     */
     private void resize(int capacity) {
         Node[] temp = new ArrayHeap.Node[capacity];
         for (int i = 1; i < this.contents.length; i++) {
