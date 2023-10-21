@@ -48,11 +48,11 @@ public class Solver {
         }
     }
 
-    private class SearchNode {
+    private static class SearchNode {
         WorldState ws;
         int moves = 0;
         SearchNode previous;
-        int distanceToGoal = -1;
+        int distanceToGoal;
 
         SearchNode(WorldState ws, SearchNode previous) {
             this.ws = ws;
@@ -60,18 +60,13 @@ public class Solver {
                 this.moves = previous.moves + 1;
             }
             this.previous = previous;
+            this.distanceToGoal = ws.estimatedDistanceToGoal();
         }
     }
 
-    private class SNComparator implements Comparator<SearchNode> {
+    private static class SNComparator implements Comparator<SearchNode> {
         @Override
         public int compare(SearchNode o1, SearchNode o2) {
-            if (o1.distanceToGoal < 0) {
-                o1.distanceToGoal = o1.ws.estimatedDistanceToGoal();
-            }
-            if (o2.distanceToGoal < 0) {
-                o2.distanceToGoal = o2.ws.estimatedDistanceToGoal();
-            }
             int ob1 = o1.moves + o1.distanceToGoal;
             int ob2 = o2.moves + o2.distanceToGoal;
             return ob1 - ob2;
