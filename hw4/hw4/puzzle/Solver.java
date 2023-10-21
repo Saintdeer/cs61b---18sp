@@ -18,7 +18,7 @@ public class Solver {
     }
 
     private void solverHelper() {
-        while(true) {
+        while (true) {
             SearchNode min = snPQ.delMin();
             if (min.ws.isGoal()) {
                 moves = min.moves;
@@ -29,8 +29,8 @@ public class Solver {
         }
     }
 
-    private void findPath(SearchNode sn){
-        while(sn != null){
+    private void findPath(SearchNode sn) {
+        while (sn != null) {
             wsList.add(0, sn.ws);
             sn = sn.previous;
         }
@@ -39,7 +39,7 @@ public class Solver {
     private void getNeighbors(SearchNode removedSN) {
         Iterable<WorldState> nbs = removedSN.ws.neighbors();
         SearchNode nbGrandParent = removedSN.previous;
-        for (WorldState nb: nbs) {
+        for (WorldState nb : nbs) {
             if (nbGrandParent != null && nb.equals(nbGrandParent.ws)) {
                 continue; // enqueued WorldState can't be its own grandparent
             }
@@ -66,10 +66,10 @@ public class Solver {
     private class SNComparator implements Comparator<SearchNode> {
         @Override
         public int compare(SearchNode o1, SearchNode o2) {
-            if(o1.distanceToGoal < 0){
+            if (o1.distanceToGoal < 0) {
                 o1.distanceToGoal = o1.ws.estimatedDistanceToGoal();
             }
-            if(o2.distanceToGoal < 0){
+            if (o2.distanceToGoal < 0) {
                 o2.distanceToGoal = o2.ws.estimatedDistanceToGoal();
             }
             int ob1 = o1.moves + o1.distanceToGoal;
@@ -77,6 +77,7 @@ public class Solver {
             return ob1 - ob2;
         }
     }
+
     public int moves() {
         return moves;
     }

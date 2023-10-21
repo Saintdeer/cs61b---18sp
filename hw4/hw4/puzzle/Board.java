@@ -6,48 +6,51 @@ public class Board implements WorldState {
     private final int BLANK = 0;
     private final int[][] board;
     private final int size;
-    public Board(int[][] tiles){
+
+    public Board(int[][] tiles) {
         size = tiles.length;
         board = new int[size][size];
         for (int i = 0; i < size; i++) {
             System.arraycopy(tiles[i], 0, board[i], 0, size);
         }
     }
-    public int tileAt(int i, int j){
-        if(i < 0 || j < 0 || i >= size || j >= size){
+
+    public int tileAt(int i, int j) {
+        if (i < 0 || j < 0 || i >= size || j >= size) {
             throw new IndexOutOfBoundsException();
         }
         return board[i][j];
     }
-    public int size(){
+
+    public int size() {
         return size;
     }
-    public int hamming(){
+
+    public int hamming() {
         int num = 0;
         int n = 1;
-        int size = size();
-        for(int i = 0; i < size; i++){
-            for(int j = 0; j < size; j++, n++){
-                if(board[i][j] == BLANK){
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++, n++) {
+                if (board[i][j] == BLANK) {
                     continue;
                 }
-                if(board[i][j] != n){
+                if (board[i][j] != n) {
                     num += 1;
                 }
             }
         }
         return num;
     }
-    public int manhattan(){
+
+    public int manhattan() {
         int num = 0;
         int n = 1;
-        int size = size();
-        for(int i = 0; i < size; i++){
-            for(int j = 0; j < size; j++, n++){
-                if(board[i][j] == 0){
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++, n++) {
+                if (board[i][j] == 0) {
                     continue;
                 }
-                if(board[i][j] != n){
+                if (board[i][j] != n) {
                     int number = board[i][j] - 1;
                     int x = number / size;
                     int y = number % size;
@@ -59,12 +62,12 @@ public class Board implements WorldState {
     }
 
     @Override
-    public int estimatedDistanceToGoal(){
+    public int estimatedDistanceToGoal() {
         return manhattan();
     }
 
     @Override
-    public boolean equals(Object y){
+    public boolean equals(Object y) {
         if (this == y) {
             return true;
         }
@@ -73,12 +76,12 @@ public class Board implements WorldState {
         }
 
         Board y1 = (Board) y;
-        if(y1.size() != size){
+        if (y1.size() != size) {
             return false;
         }
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if(board[i][j] == y1.board[i][j]){
+                if (board[i][j] != y1.board[i][j]) {
                     return false;
                 }
             }
@@ -122,15 +125,17 @@ public class Board implements WorldState {
         return neighbors;
     }
 
-    /** Returns the string representation of the board.
-      * Uncomment this method. */
+    /**
+     * Returns the string representation of the board.
+     * Uncomment this method.
+     */
     public String toString() {
         StringBuilder s = new StringBuilder();
         int N = size();
         s.append(N + "\n");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                s.append(String.format("%2d ", tileAt(i,j)));
+                s.append(String.format("%2d ", tileAt(i, j)));
             }
             s.append("\n");
         }
@@ -138,4 +143,8 @@ public class Board implements WorldState {
         return s.toString();
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }
