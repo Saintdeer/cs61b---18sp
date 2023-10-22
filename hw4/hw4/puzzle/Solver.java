@@ -8,9 +8,9 @@ import java.util.Comparator;
 
 public class Solver {
     private int moves = 0;
-    private final MinPQ<SearchNode> snPQ = new MinPQ<>(new SNComparator());
-    private final List<WorldState> wsList = new ArrayList<>(); // for solution()
-    // int n = 0;
+    private final MinPQ<SearchNode> snPQ = new MinPQ<>(new SNComparator()); // for neighbors
+    private final List<WorldState> wsSolution = new ArrayList<>(); // for solution()
+    // int count = 0; // for CommonBugDetector
 
     public Solver(WorldState initial) {
         snPQ.insert(new SearchNode(initial, null));
@@ -29,13 +29,6 @@ public class Solver {
         }
     }
 
-    private void findPath(SearchNode sn) {
-        while (sn != null) {
-            wsList.add(0, sn.ws);
-            sn = sn.previous;
-        }
-    }
-
     private void getNeighbors(SearchNode removedSN) {
         Iterable<WorldState> nbs = removedSN.ws.neighbors();
         SearchNode nbGrandParent = removedSN.previous;
@@ -44,7 +37,15 @@ public class Solver {
                 continue; // enqueued WorldState can't be its own grandparent
             }
             snPQ.insert(new SearchNode(nb, removedSN));
-            // n += 1;
+            // count += 1;
+        }
+    }
+
+    /* go back from the goal to the initial to record solutions */
+    private void findPath(SearchNode sn) {
+        while (sn != null) {
+            wsSolution.add(0, sn.ws);
+            sn = sn.previous;
         }
     }
 
@@ -64,6 +65,7 @@ public class Solver {
         }
     }
 
+    /* for minPQ */
     private static class SNComparator implements Comparator<SearchNode> {
         @Override
         public int compare(SearchNode o1, SearchNode o2) {
@@ -78,6 +80,7 @@ public class Solver {
     }
 
     public Iterable<WorldState> solution() {
-        return wsList;
+        return wsSolution;
     }
 }
+

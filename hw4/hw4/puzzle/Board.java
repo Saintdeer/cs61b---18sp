@@ -43,22 +43,22 @@ public class Board implements WorldState {
     }
 
     public int manhattan() {
-        int num = 0;
-        int n = 1;
+        int total = 0;
+        int correctNum = 1;
         for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++, n++) {
+            for (int j = 0; j < size; j++, correctNum++) {
                 if (board[i][j] == 0) {
                     continue;
                 }
-                if (board[i][j] != n) {
+                if (board[i][j] != correctNum) {
                     int number = board[i][j] - 1;
                     int x = number / size;
                     int y = number % size;
-                    num += Math.abs(x - i) + Math.abs(y - j);
+                    total += Math.abs(x - i) + Math.abs(y - j);
                 }
             }
         }
-        return num;
+        return total;
     }
 
     @Override
