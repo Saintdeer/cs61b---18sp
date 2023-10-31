@@ -1,7 +1,7 @@
 package lab11.graphs;
 
 /**
- *  @author Josh Hug
+ * @author Josh Hug
  */
 public class TrivialMazeExplorerDemo {
     public static void main(String[] args) {
