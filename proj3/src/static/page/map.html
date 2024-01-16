@@ -1,31 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-  <script src="https://use.fontawesome.com/c0977efc4f.js"></script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://use.fontawesome.com/c0977efc4f.js"></script>
 
-  <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
-  <link rel="stylesheet" href="styles/map.css">
-  <title>BearMaps</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
+    <link rel="stylesheet" href="styles/map.css">
+    <title>BearMaps</title>
 </head>
 <body>
-  <div class="map-container">
+<div class="map-container">
     <div id="mapbody"><img id="map"></div>
-  </div>
+</div>
 
-  <img id="dest" src="marker.gif">
-  <div id="markers"></div>
-  <div class="actions">
+<img id="dest" src="marker.gif">
+<div id="markers"></div>
+<div class="actions">
     <div class="widget card">
-      <div class="card-content">
+        <div class="card-content">
         <span class="search-container">
           <label for="tags"></label>
           <input class="search" id="tags" placeholder="Search locations">
         </span>
-        <span class="icons-container">
+            <span class="icons-container">
           <a class="zoomin"><i class="action-icon fa fa-2x fa-search-plus" aria-hidden="true"></i></a>
           <a class="zoomout"><i class="action-icon fa fa-2x fa-search-minus" aria-hidden="true"></i></a>
           <a class="info">
@@ -62,34 +62,34 @@
             </div>
           </a>
         </span>
-      </div>
+        </div>
     </div>
     <div>
-      <a class="clear waves-effect btn">clear route</a>
-      <div class="status">
-          <div id="status-route" class="card">
-            <div class="card-content">
-              Double-click again <br> for route endpoint ...
+        <a class="clear waves-effect btn">clear route</a>
+        <div class="status">
+            <div id="status-route" class="card">
+                <div class="card-content">
+                    Double-click again <br> for route endpoint ...
+                </div>
             </div>
-          </div>
-          <div id="status-loading" class="card">
-            <div class="card-content">
-              <div class="loader-text">Rastering</div>
-              <div class="loader">Loading...</div>
+            <div id="status-loading" class="card">
+                <div class="card-content">
+                    <div class="loader-text">Rastering</div>
+                    <div class="loader">Loading...</div>
+                </div>
             </div>
-          </div>
-          <div id="status-error" class="card">
-            <div class="card-content">
-              Got server-side error! <br> See Java Console
+            <div id="status-error" class="card">
+                <div class="card-content">
+                    Got server-side error! <br> See Java Console
+                </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
-  <div class="directions">
+</div>
+</div>
+<div class="directions">
     <div class="card">
-      <div class="card-content">
+        <div class="card-content">
         <span class="directions-container">
           <i class="action-icon fa fa-2x fa-map-signs" aria-hidden="true"></i>
           <div class="directions-window">
@@ -98,9 +98,9 @@
             <div class="directions-text" id="directions-text">No routing directions to display.</div>
           </div>
         </span>
-      </div>
+        </div>
     </div>
-  </div>
-  <script src="scripts/map.js"></script>
+</div>
+<script src="scripts/map.js"></script>
 </body>
 </html>
