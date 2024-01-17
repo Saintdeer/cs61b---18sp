@@ -34,8 +34,9 @@ public class GraphDB {
     static class Node {
         long id;
         double lon, lat;
-        double moves = Double.MAX_VALUE, distanceToGoal = 0;
-        Node preNode = null, startNode = null, endNode = null;
+        double moves = Double.MAX_VALUE,
+                distanceToGoal = 0;
+        Node preNode = null;
         Map<String, String> info = new HashMap<>();
         Set<Long> adjacent = new HashSet<>();
 
@@ -60,6 +61,7 @@ public class GraphDB {
         Iterable<Node> nodeIterable = way.nodesOfWay;
         Node oldNode = null;
 
+        /* if number of nodes of the way less than 2, there's no edges */
         int count = 0;
         for (Node node : nodeIterable) {
             count++;
@@ -71,6 +73,7 @@ public class GraphDB {
             return;
         }
 
+        /* only nodes with relationships considered valid */
         for (Node node : nodeIterable) {
             long id = node.id;
             ids.add(id);

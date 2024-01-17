@@ -1,8 +1,10 @@
 import java.util.List;
-import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Comparator;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +38,7 @@ public class Router {
 
         List<Long> path = spHelper(g, stNd, destNd);
 
-        return fixPath(g, path); // FIXME
+        return fixPath(g, path); // FIX ME
     }
 
     private static List<Long> spHelper(GraphDB g, GraphDB.Node stNd, GraphDB.Node destNd) {
@@ -45,60 +47,52 @@ public class Router {
 
         double destNdLon = destNd.lon, destNdLat = destNd.lat;
 
-        stNd.startNode = stNd;
-        stNd.preNode = null;
-        stNd.endNode = destNd;
         stNd.moves = 0;
         stNd.distanceToGoal = GraphDB.distance(stNd.lon, stNd.lat, destNd.lon, destNd.lat);
+
+        // GraphDB.Node previous = null;
+        stNd.preNode = null;
         minPQ.add(stNd);
-        GraphDB.Node previous = null;
+
+        Set<Long> removed = new HashSet<>();
 
         while (true) {
             GraphDB.Node min = minPQ.remove();
+            removed.add(min.id);
             paths.add(min.id);
             if (min.equals(destNd)) {
                 break;
             }
             for (Long id : min.adjacent) {
+
                 GraphDB.Node nd = g.validNodes.get(id);
 
-                if (nd.equals(previous)) {
+                if (removed.contains(id)) {
                     continue;
                 }
 
                 double ndLon = nd.lon, ndLat = nd.lat;
 
                 double moves = min.moves + GraphDB.distance(min.lon, min.lat, ndLon, ndLat);
-                if (nd.moves < moves && stNd.equals(nd.startNode) && destNd.equals(nd.endNode)) {
-                    continue;
-                }
-                nd.startNode = stNd;
-                nd.endNode = destNd;
+
                 nd.preNode = min;
                 nd.moves = moves;
                 nd.distanceToGoal = GraphDB.distance(ndLon, ndLat, destNdLon, destNdLat);
 
                 minPQ.add(nd);
             }
-            previous = min;
         }
         return paths;
     }
 
     private static List<Long> fixPath(GraphDB g, List<Long> path) {
-        // List<Long> newPath = new ArrayList<>();
         int lastIndex = path.size() - 1;
         Long last = path.get(lastIndex);
         GraphDB.Node nd = g.validNodes.get(last);
-        GraphDB.Node startNd = nd.startNode;
+        /*GraphDB.Node startNd = g.validNodes.get(path.get(0));
         if(startNd == null){
             return path;
         }
-       /* while (nd != null) {
-            last = nd.id;
-            newPath.add(0, last);
-            nd = nd.preNode;
-        }*/
         while(lastIndex > 0){
             Long preId = nd.preNode.id,
                     prePathId = path.get(lastIndex - 1);
@@ -108,8 +102,15 @@ public class Router {
                 nd = nd.preNode;
             }
             lastIndex--;
+        }*/
+
+
+        List<Long> newPath = new ArrayList<>();
+        while (nd != null) {
+            newPath.add(0, nd.id);
+            nd = nd.preNode;
         }
-        return path;
+        return newPath;
     }
 
     private static class NDComparator implements Comparator<GraphDB.Node> {
