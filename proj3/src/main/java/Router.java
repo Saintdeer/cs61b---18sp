@@ -79,7 +79,6 @@ public class Router {
                 nd.distanceToGoal = GraphDB.distance(ndLon, ndLat, destNdLon, destNdLat);
 
                 minPQ.add(nd);
-                // count += 1;
             }
             previous = min;
         }
@@ -87,15 +86,30 @@ public class Router {
     }
 
     private static List<Long> fixPath(GraphDB g, List<Long> path) {
-        List<Long> newPath = new ArrayList<>();
-        Long last = path.get(path.size() - 1);
+        // List<Long> newPath = new ArrayList<>();
+        int lastIndex = path.size() - 1;
+        Long last = path.get(lastIndex);
         GraphDB.Node nd = g.validNodes.get(last);
-        while (nd != null) {
+        GraphDB.Node startNd = nd.startNode;
+        if(startNd == null){
+            return path;
+        }
+       /* while (nd != null) {
             last = nd.id;
             newPath.add(0, last);
             nd = nd.preNode;
+        }*/
+        while(lastIndex > 0){
+            Long preId = nd.preNode.id,
+                    prePathId = path.get(lastIndex - 1);
+            if(!preId.equals(prePathId)){
+                path.remove(prePathId);
+            } else {
+                nd = nd.preNode;
+            }
+            lastIndex--;
         }
-        return newPath;
+        return path;
     }
 
     private static class NDComparator implements Comparator<GraphDB.Node> {
