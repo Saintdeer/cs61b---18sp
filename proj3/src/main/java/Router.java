@@ -2,7 +2,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.PriorityQueue;
+// import java.util.PriorityQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +38,11 @@ public class Router {
     }
 
     private static long spHelper(GraphDB g, long startId, long destId) {
-        PriorityQueue<GraphDB.Node> minPQ = new PriorityQueue<>(new NDComparator());
+//        PriorityQueue<GraphDB.Node> minPQ = new PriorityQueue<>(new NDComparator());
+        ExtrinsicPQ<Long> minPQ = new ArrayHeap<>();
+        for (long id : g.vertices()) {
+            minPQ.insert(id, Long.MAX_VALUE);
+        }
 
         GraphDB.Node startNode = g.getNode(startId),
                 destNode = g.getNode(destId);
@@ -52,16 +56,17 @@ public class Router {
         startNode.destId = destId;
         startNode.moves = 0;
 
-        minPQ.add(startNode);
+//        minPQ.add(startNode);
+        minPQ.changePriority(startId, startNode.moves + startNode.distanceToGoal);
         long previousId = Long.MAX_VALUE;
         long endId = startId;
 
         while (true) {
-            if (minPQ.isEmpty()) {
+            if (minPQ.size() == 0) {
                 break;
             }
-            GraphDB.Node min = minPQ.remove();
-            long minId = min.id;
+            long minId = minPQ.removeMin();
+            GraphDB.Node min = g.getNode(minId);
 
             if (g.getNode(endId).distanceToGoal > min.distanceToGoal) {
                 endId = minId;
@@ -91,7 +96,8 @@ public class Router {
                 neighborNode.startId = startId;
                 neighborNode.destId = destId;
 
-                minPQ.add(neighborNode);
+//                minPQ.add(neighborNode);
+                minPQ.changePriority(neighborId, neighborNode.moves + neighborNode.distanceToGoal);
             }
             previousId = minId;
         }
