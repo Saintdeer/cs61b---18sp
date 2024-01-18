@@ -76,7 +76,8 @@ public class Router {
                 if (neighborId == previousId) {
                     continue;
                 }
-                
+
+                int i = 0;
                 double ndLon = neighborNode.lon,
                         ndLat = neighborNode.lat;
                 double moves = min.moves + GraphDB.distance(min.lon, min.lat, ndLon, ndLat);
