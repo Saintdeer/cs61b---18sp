@@ -106,7 +106,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             makes this way invalid. Instead, think of keeping a list of possible connections and
             remember whether this way is valid or not. */
             long id = Long.parseLong(attributes.getValue("ref"));
-            currentWay.nodesOfWay.add(g.rowNodes.get(id));
+            currentWay.nodesIdOfWay.add(id);
 
         } else if (activeState.equals("way") && qName.equals("tag")) {
             /* While looking at a way, we found a <tag...> tag. */

@@ -34,8 +34,8 @@ public class GraphDB {
     static class Node {
         long id;
         double lon, lat;
-        double moves, distanceToGoal;
-        Node preNode = null;
+        double moves = Double.MAX_VALUE, distanceToGoal = 0;
+        long preId = Long.MAX_VALUE, startId = Long.MAX_VALUE, destId = Long.MAX_VALUE;
         Map<String, String> info = new HashMap<>();
         Set<Long> adjacent = new HashSet<>();
 
@@ -57,12 +57,11 @@ public class GraphDB {
     /* add nodes of the way to graphdb when way is valid,
         and add adjacent relationships on this way*/
     void addNode(Way way) {
-        Iterable<Node> nodeIterable = way.nodesOfWay;
-        Node oldNode = null;
+        Iterable<Long> nodeIdIterable = way.nodesIdOfWay;
 
         /* if number of nodes of the way less than 2, there's no edges */
         int count = 0;
-        for (Node node : nodeIterable) {
+        for (Long nodeId : nodeIdIterable) {
             count++;
             if (count > 1) {
                 break;
@@ -73,10 +72,11 @@ public class GraphDB {
         }
 
         /* only nodes with relationships considered valid */
-        for (Node node : nodeIterable) {
-            long id = node.id;
-            ids.add(id);
-            validNodes.put(id, node);
+        Node oldNode = null;
+        for (Long nodeId : nodeIdIterable) {
+            Node node = rowNodes.get(nodeId);
+            ids.add(nodeId);
+            validNodes.put(nodeId, node);
             node.addAdjacent(oldNode);
             oldNode = node;
         }
@@ -86,11 +86,15 @@ public class GraphDB {
         long id;
         boolean valid;
         Map<String, String> info = new HashMap<>();
-        List<Node> nodesOfWay = new ArrayList<>();
+        List<Long> nodesIdOfWay = new ArrayList<>();
 
         Way(long id) {
             this.id = id;
         }
+    }
+
+    Node getNode(long id) {
+        return validNodes.get(id);
     }
 
     /**
