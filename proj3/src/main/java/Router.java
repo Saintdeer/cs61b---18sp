@@ -54,7 +54,7 @@ public class Router {
         long previousId = Long.MAX_VALUE;
 
         while (true) {
-            if(minPQ.isEmpty()){
+            if (minPQ.isEmpty()) {
                 break;
             }
             GraphDB.Node min = minPQ.remove();
@@ -95,7 +95,7 @@ public class Router {
             path.add(0, destId);
             destId = g.getNode(destId).preId;
         }
-        if(path.size() < 2){
+        if (path.size() < 2) {
             return new ArrayList<>();
         }
         return path;
