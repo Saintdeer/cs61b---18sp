@@ -32,12 +32,12 @@ public class Router {
 
         long startId = g.closest(stlon, stlat), destId = g.closest(destlon, destlat);
 
-        spHelper(g, startId, destId);
+        long endId = spHelper(g, startId, destId);
 
-        return findPath(g, destId); // FIX ME
+        return findPath(g, endId); // FIX ME
     }
 
-    private static void spHelper(GraphDB g, long startId, long destId) {
+    private static long spHelper(GraphDB g, long startId, long destId) {
         PriorityQueue<GraphDB.Node> minPQ = new PriorityQueue<>(new NDComparator());
 
         GraphDB.Node startNode = g.getNode(startId),
@@ -46,12 +46,15 @@ public class Router {
                 destNdLat = destNode.lat;
 
         startNode.preId = Long.MAX_VALUE;
+        startNode.distanceToGoal = GraphDB.distance(
+                startNode.lon, startNode.lat, destNdLon, destNdLat);
         startNode.startId = startId;
         startNode.destId = destId;
         startNode.moves = 0;
 
         minPQ.add(startNode);
         long previousId = Long.MAX_VALUE;
+        long endId = startId;
 
         while (true) {
             if (minPQ.isEmpty()) {
@@ -59,6 +62,11 @@ public class Router {
             }
             GraphDB.Node min = minPQ.remove();
             long minId = min.id;
+
+            if (g.getNode(endId).distanceToGoal > min.distanceToGoal) {
+                endId = minId;
+            }
+
             if (minId == destId) {
                 break;
             }
@@ -87,6 +95,7 @@ public class Router {
             }
             previousId = minId;
         }
+        return endId;
     }
 
     private static List<Long> findPath(GraphDB g, long destId) {
@@ -94,9 +103,6 @@ public class Router {
         while (destId != Long.MAX_VALUE) {
             path.add(0, destId);
             destId = g.getNode(destId).preId;
-        }
-        if (path.size() < 2) {
-            return new ArrayList<>();
         }
         return path;
     }
