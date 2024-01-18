@@ -51,6 +51,7 @@ public class Router {
         startNode.startId = startId;
         startNode.destId = destId;
         startNode.moves = 0;
+        int i = 0;
 
         minPQ.add(startNode);
         long previousId = Long.MAX_VALUE;
