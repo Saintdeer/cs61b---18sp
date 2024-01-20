@@ -31,10 +31,6 @@ public class TestDirections {
         List<List<Router.NavigationDirection>> expectedResults = resultsFromFile();
 
         for (int i = 0; i < NUM_TESTS; i++) {
-
-            if(i == 5){
-                int n = 0;
-            }
             System.out.println(String.format("Running test: %d", i));
             List<Long> path = paths.get(i);
             List<Router.NavigationDirection> actual = Router.routeDirections(graph, path);

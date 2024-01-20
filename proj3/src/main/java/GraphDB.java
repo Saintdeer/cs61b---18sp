@@ -37,8 +37,6 @@ public class GraphDB {
     static class Node {
         long id;
         double lon, lat;
-        double moves = Double.MAX_VALUE, distanceToGoal = 0;
-        long preId = Long.MAX_VALUE, startId = Long.MAX_VALUE, destId = Long.MAX_VALUE;
         Map<String, String> info = new HashMap<>();
         Set<Long> adjacent = new HashSet<>();
         Set<String> way = new HashSet<>();

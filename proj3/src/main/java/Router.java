@@ -1,10 +1,12 @@
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.PriorityQueue;
-import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,17 @@ import java.util.regex.Pattern;
  * down to the priority you use to order your vertices.
  */
 public class Router {
+    /* id map to the closest distance to source for now */
+    static Map<Long, Double> idToBestDistance;
+
+    /* id map to the best parent corresponding to bestDistance above.
+    * for example, id A and id B, B's best parent is A only if
+    * distance(source, A) + distance(A, B) is the closest way
+    * from source to B for now, otherwise it will be updated */
+    static Map<Long, Long> idToParent;
+
+    /* distance from id to goal */
+    static Map<Long, Double> idToDistanceToGoal;
     /**
      * Return a List of longs representing the shortest path from the node
      * closest to a start location and the node closest to the destination
@@ -31,8 +44,12 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
+        idToBestDistance = new HashMap<>();
+        idToParent = new HashMap<>();
+        idToDistanceToGoal = new HashMap<>();
 
-        long startId = g.closest(stlon, stlat), destId = g.closest(destlon, destlat);
+        long startId = g.closest(stlon, stlat),
+                destId = g.closest(destlon, destlat);
 
         long endId = spHelper(g, startId, destId);
 
@@ -40,80 +57,68 @@ public class Router {
     }
 
     private static long spHelper(GraphDB g, long startId, long destId) {
-        PriorityQueue<GraphDB.Node> minPQ = new PriorityQueue<>(new NDComparator());
+        PriorityQueue<Long> minPQ = new PriorityQueue<>(new NDComparator());
+        minPQ.add(startId);
 
-        GraphDB.Node startNode = g.getNode(startId),
-                destNode = g.getNode(destId);
-        double destNdLon = destNode.lon,
-                destNdLat = destNode.lat;
+        idToParent.put(startId, startId);
+        idToDistanceToGoal.put(startId, g.distance(startId, destId));
+        idToBestDistance.put(startId, 0.0);
 
-        startNode.preId = Long.MAX_VALUE;
-        startNode.distanceToGoal = GraphDB.distance(
-                startNode.lon, startNode.lat, destNdLon, destNdLat);
-        startNode.startId = startId;
-        startNode.destId = destId;
-        startNode.moves = 0;
-
-        minPQ.add(startNode);
-        long previousId = Long.MAX_VALUE;
-        long endId = startId;
+        long preId = Long.MAX_VALUE;
+        long endId = startId; // final destination id
 
         while (true) {
             if (minPQ.isEmpty()) {
                 break;
             }
-            GraphDB.Node min = minPQ.remove();
-            long minId = min.id;
 
-            if (g.getNode(endId).distanceToGoal > min.distanceToGoal) {
+            long minId = minPQ.remove();
+
+            /* find the endId closest to destination, in case destId can't be reached */
+            if (idToDistanceToGoal.get(endId) > idToDistanceToGoal.get(minId)) {
                 endId = minId;
             }
 
             if (minId == destId) {
                 break;
             }
-            for (Long neighborId : min.adjacent) {
-                GraphDB.Node neighborNode = g.getNode(neighborId);
+            for (Long neighborId : g.getNode(minId).adjacent) {
+                double newDistance = g.distance(minId, neighborId) + idToBestDistance.get(minId);
+                boolean idAdded = idToBestDistance.containsKey(neighborId);
 
-                if (neighborId == previousId) {
-                    continue;
+                if (neighborId == preId
+                        || (idAdded && idToBestDistance.get(neighborId) < newDistance)) {
+                    continue; // the distance didn't be updated, no need to add to minPQ
+                } else if (!idAdded) {
+                    idToDistanceToGoal.put(neighborId, g.distance(neighborId, destId));
                 }
+                idToBestDistance.put(neighborId, newDistance);
+                idToParent.put(neighborId, minId);
 
-                double ndLon = neighborNode.lon,
-                        ndLat = neighborNode.lat;
-                double moves = min.moves + GraphDB.distance(min.lon, min.lat, ndLon, ndLat);
-                if (neighborNode.moves < moves
-                        && startId == neighborNode.startId
-                        && destId == neighborNode.destId) {
-                    continue;
-                }
-                neighborNode.moves = moves;
-                neighborNode.distanceToGoal = GraphDB.distance(ndLon, ndLat, destNdLon, destNdLat);
-                neighborNode.preId = min.id;
-                neighborNode.startId = startId;
-                neighborNode.destId = destId;
-
-                minPQ.add(neighborNode);
+                minPQ.add(neighborId);
             }
-            previousId = minId;
+            preId = minId;
         }
         return endId;
     }
 
     private static List<Long> findPath(GraphDB g, long destId) {
         List<Long> path = new ArrayList<>();
-        while (destId != Long.MAX_VALUE) {
+        while (destId != idToParent.get(destId)) {
             path.add(0, destId);
-            destId = g.getNode(destId).preId;
+            destId = idToParent.get(destId);
+        }
+        if (!path.isEmpty()) {
+            path.add(0, destId);
         }
         return path;
     }
 
-    private static class NDComparator implements Comparator<GraphDB.Node> {
+    private static class NDComparator implements Comparator<Long> {
         @Override
-        public int compare(GraphDB.Node o1, GraphDB.Node o2) {
-            double ob1 = o1.moves + o1.distanceToGoal,
-                    ob2 = o2.moves + o2.distanceToGoal;
+        public int compare(Long o1, Long o2) {
+            double ob1 = idToBestDistance.get(o1) + idToDistanceToGoal.get(o1),
+                    ob2 = idToBestDistance.get(o2) + idToDistanceToGoal.get(o2);
 
             double result = ob1 - ob2;
             if (result > 0) {
@@ -136,7 +141,7 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        int i = 1;
+        // int i = 1;
 
         List<NavigationDirection> directionList = new ArrayList<>();
 
@@ -195,7 +200,7 @@ public class Router {
 
             }
 
-            i++;
+            // i++;
             NavigationDirection lastNd = directionList.get(directionList.size() - 1);
             lastNd.distance += g.distance(preId, id);
             if (currentCommonWay.size() == 1) {
