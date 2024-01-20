@@ -1,11 +1,7 @@
-import org.junit.Test;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-
-import static org.junit.Assert.assertEquals;
 
 public class Tries {
     Node root;
