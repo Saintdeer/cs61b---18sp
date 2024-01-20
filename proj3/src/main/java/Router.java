@@ -1,8 +1,10 @@
 import java.util.List;
-import java.util.Objects;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.PriorityQueue;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +36,7 @@ public class Router {
 
         long endId = spHelper(g, startId, destId);
 
-        return findPath(g, endId); // FIX ME
+        return findPath(g, endId); // done
     }
 
     private static long spHelper(GraphDB g, long startId, long destId) {
@@ -134,7 +136,105 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        int i = 1;
+
+        List<NavigationDirection> directionList = new ArrayList<>();
+
+        long idOne = route.get(0), idTwo = route.get(1);
+
+        double preBearing = g.bearing(idOne, idTwo);
+        double currentBearing = preBearing;
+
+        Set<String> preCommonWay = findCommonWay(g.getNode(idOne).way, g.getNode(idTwo).way);
+        NavigationDirection currentNd = new NavigationDirection();
+        currentNd.direction = NavigationDirection.START;
+        directionList.add(currentNd);
+
+        long preId = idOne;
+        for (long id : route) {
+            if (preId != id) {
+                currentBearing = g.bearing(preId, id);
+            }
+            double offset = preBearing - currentBearing;
+            if (currentBearing * preBearing < 0 && (offset > 180 || offset < -180)) {
+                if (preBearing > 0) {
+                    offset -= 360;
+                } else {
+                    offset += 360;
+                }
+            }
+
+            offset *= -1;
+
+            Set<String> currentCommonWay = findCommonWay(g.getNode(id).way, g.getNode(preId).way);
+            Set<String> contrast = findCommonWay(currentCommonWay, preCommonWay);
+
+            if (contrast.isEmpty() || (Math.abs(offset) > 15 && currentCommonWay.size() > 1)) {
+                currentNd = new NavigationDirection();
+                directionList.add(currentNd);
+
+                if (!contrast.isEmpty()) {
+                    currentCommonWay = findUnCommonWay(preCommonWay, currentCommonWay);
+                }
+
+                if (offset < -100) {
+                    currentNd.direction = NavigationDirection.SHARP_LEFT;
+                } else if (offset < -30) {
+                    currentNd.direction = NavigationDirection.LEFT;
+                } else if (offset < -15) {
+                    currentNd.direction = NavigationDirection.SLIGHT_LEFT;
+                } else if (offset <= 15) {
+                    currentNd.direction = NavigationDirection.STRAIGHT;
+                } else if (offset <= 30) {
+                    currentNd.direction = NavigationDirection.SLIGHT_RIGHT;
+                } else if (offset <= 100) {
+                    currentNd.direction = NavigationDirection.RIGHT;
+                } else {
+                    currentNd.direction = NavigationDirection.SHARP_RIGHT;
+                }
+
+            }
+
+            i++;
+            NavigationDirection lastNd = directionList.get(directionList.size() - 1);
+            lastNd.distance += g.distance(preId, id);
+            if (currentCommonWay.size() == 1) {
+                lastNd.way = currentCommonWay.iterator().next();
+            }
+
+            preBearing = currentBearing;
+            preCommonWay = currentCommonWay;
+
+            preId = id;
+        }
+        return directionList; // done
+    }
+
+    private static Set<String> findCommonWay(Set<String> one, Set<String> two) {
+        Set<String> way = new HashSet<>();
+        if (one.isEmpty()) { // 只要左节点one的路名是空，那么右节点two也算在这条路上
+            way.add("");
+            return way;
+        }
+        for (String nameOne : one) {
+            for (String nameTwo : two) {
+                if (nameOne.equals(nameTwo)) {
+                    way.add(nameOne);
+                }
+            }
+        }
+        return way;
+    }
+
+    private static Set<String> findUnCommonWay(Set<String> pre, Set<String> now) {
+        Set<String> way = new HashSet<>();
+
+        for (String nameOne : now) {
+            if (!pre.contains(nameOne)) {
+                way.add(nameOne);
+            }
+        }
+        return way;
     }
 
 

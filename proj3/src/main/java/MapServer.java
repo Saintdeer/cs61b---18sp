@@ -4,12 +4,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
+import java.util.LinkedList;
+import java.util.Base64;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.io.IOException;
@@ -298,7 +299,10 @@ public class MapServer {
      * cleaned <code>prefix</code>.
      */
     public static List<String> getLocationsByPrefix(String prefix) {
-        return new LinkedList<>();
+        if (prefix == null || prefix.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return graph.names.getStrWithPrefix(GraphDB.cleanString(prefix));
     }
 
     /**
@@ -315,7 +319,26 @@ public class MapServer {
      * "id" : Number, The id of the node. <br>
      */
     public static List<Map<String, Object>> getLocations(String locationName) {
-        return new LinkedList<>();
+        List<Map<String, Object>> result = new LinkedList<>();
+        if (locationName == null || locationName.isEmpty()) {
+            return result;
+        }
+
+        String cleanName = GraphDB.cleanString(locationName);
+        if (!graph.cleanNameToId.containsKey(cleanName)) {
+            return result;
+        }
+        List<Long> ids = graph.cleanNameToId.get(cleanName);
+        for (Long id : ids) {
+            GraphDB.Node nd = graph.nameNodes.get(id);
+            Map<String, Object> info = new HashMap<>();
+            info.put("lat", nd.lat);
+            info.put("lon", nd.lon);
+            info.put("name", nd.info.get("name"));
+            info.put("id", id);
+            result.add(info);
+        }
+        return result;
     }
 
     /**

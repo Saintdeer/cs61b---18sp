@@ -6,12 +6,12 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -29,7 +29,10 @@ public class GraphDB {
      */
     Map<Long, Node> rowNodes = new HashMap<>();
     Map<Long, Node> validNodes = new HashMap<>();
+    Map<Long, Node> nameNodes = new HashMap<>();
     Set<Long> ids = new HashSet<>();
+    Tries names = new Tries();
+    Map<String, List<Long>> cleanNameToId = new HashMap<>();
 
     static class Node {
         long id;
@@ -38,6 +41,7 @@ public class GraphDB {
         long preId = Long.MAX_VALUE, startId = Long.MAX_VALUE, destId = Long.MAX_VALUE;
         Map<String, String> info = new HashMap<>();
         Set<Long> adjacent = new HashSet<>();
+        Set<String> way = new HashSet<>();
 
         Node(long id, double lon, double lat) {
             this.id = id;
@@ -78,6 +82,21 @@ public class GraphDB {
             ids.add(nodeId);
             validNodes.put(nodeId, node);
             node.addAdjacent(oldNode);
+
+            String wayName = way.info.get("name");
+            if (wayName != null) {
+                node.way.add(wayName);
+                names.addStr(wayName);
+
+                String cleanWayName = cleanString(wayName);
+                if (cleanNameToId.containsKey(cleanWayName)) {
+                    cleanNameToId.get(cleanWayName).add(way.id);
+                } else {
+                    List<Long> lst = new ArrayList<>();
+                    lst.add(way.id);
+                    cleanNameToId.put(cleanWayName, lst);
+                }
+            }
             oldNode = node;
         }
     }
@@ -136,7 +155,13 @@ public class GraphDB {
      */
     private void clean() {
         //Your code here.
-        rowNodes = null;
+        for (Long id : rowNodes.keySet()) {
+            Node nd = rowNodes.get(id);
+            if (nd.info.get("name") != null) {
+                nameNodes.put(id, nd);
+            }
+        }
+        rowNodes.clear();
     }
 
     /**

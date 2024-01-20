@@ -2,9 +2,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
@@ -137,7 +139,18 @@ public class GraphBuildingHandler extends DefaultHandler {
             node this tag belongs to. Remember XML is parsed top-to-bottom, so probably it's the
             last node that you looked at (check the first if-case). */
 //            System.out.println("Node's name: " + attributes.getValue("v"));
-            currentNode.info.put("name", attributes.getValue("v"));
+            String nodeName = attributes.getValue("v");
+            currentNode.info.put("name", nodeName);
+            g.names.addStr(nodeName);
+
+            String cleanNodeName = GraphDB.cleanString(nodeName);
+            if (g.cleanNameToId.containsKey(cleanNodeName)) {
+                g.cleanNameToId.get(cleanNodeName).add(currentNode.id);
+            } else {
+                List<Long> lst = new ArrayList<>();
+                lst.add(currentNode.id);
+                g.cleanNameToId.put(cleanNodeName, lst);
+            }
         }
     }
 
