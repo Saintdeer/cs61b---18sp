@@ -25,11 +25,12 @@ public class Router {
     /* id map to the best parent corresponding to bestDistance above.
     * for example, id A and id B, B's best parent is A only if
     * distance(source, A) + distance(A, B) is the closest way
-    * from source to B for now, otherwise it will be updated */
+    * from source to B for now, otherwise it will be updated to other id*/
     static Map<Long, Long> idToParent;
 
-    /* distance from id to goal */
-    static Map<Long, Double> idToDistanceToGoal;
+    static GraphDB graph;
+    static long destId;
+
     /**
      * Return a List of longs representing the shortest path from the node
      * closest to a start location and the node closest to the destination
@@ -46,22 +47,23 @@ public class Router {
                                           double destlon, double destlat) {
         idToBestDistance = new HashMap<>();
         idToParent = new HashMap<>();
-        idToDistanceToGoal = new HashMap<>();
 
-        long startId = g.closest(stlon, stlat),
-                destId = g.closest(destlon, destlat);
+        Router.graph = g;
 
-        long endId = spHelper(g, startId, destId);
+        long startId = g.closest(stlon, stlat);
+        long destinationId = g.closest(destlon, destlat);
+        Router.destId = destinationId;
 
-        return findPath(g, endId); // done
+        long endId = spHelper(startId, destinationId);
+
+        return findPath(endId); // done
     }
 
-    private static long spHelper(GraphDB g, long startId, long destId) {
+    private static long spHelper(long startId, long destinationId) {
         PriorityQueue<Long> minPQ = new PriorityQueue<>(new NDComparator());
         minPQ.add(startId);
 
         idToParent.put(startId, startId);
-        idToDistanceToGoal.put(startId, g.distance(startId, destId));
         idToBestDistance.put(startId, 0.0);
 
         long preId = Long.MAX_VALUE;
@@ -73,24 +75,21 @@ public class Router {
             }
 
             long minId = minPQ.remove();
-
-            /* find the endId closest to destination, in case destId can't be reached */
-            if (idToDistanceToGoal.get(endId) > idToDistanceToGoal.get(minId)) {
+            if (graph.distance(endId, destinationId) > graph.distance(minId, destinationId)) {
                 endId = minId;
             }
 
-            if (minId == destId) {
+            if (minId == destinationId) {
                 break;
             }
-            for (Long neighborId : g.getNode(minId).adjacent) {
-                double newDistance = g.distance(minId, neighborId) + idToBestDistance.get(minId);
+            for (Long neighborId : graph.getNode(minId).adjacent) {
+                double newDistance = graph.distance(minId, neighborId)
+                        + idToBestDistance.get(minId);
                 boolean idAdded = idToBestDistance.containsKey(neighborId);
 
                 if (neighborId == preId
                         || (idAdded && idToBestDistance.get(neighborId) < newDistance)) {
                     continue; // the distance didn't be updated, no need to add to minPQ
-                } else if (!idAdded) {
-                    idToDistanceToGoal.put(neighborId, g.distance(neighborId, destId));
                 }
                 idToBestDistance.put(neighborId, newDistance);
                 idToParent.put(neighborId, minId);
@@ -102,14 +101,14 @@ public class Router {
         return endId;
     }
 
-    private static List<Long> findPath(GraphDB g, long destId) {
+    private static List<Long> findPath(long destinationId) {
         List<Long> path = new ArrayList<>();
-        while (destId != idToParent.get(destId)) {
-            path.add(0, destId);
-            destId = idToParent.get(destId);
+        while (destinationId != idToParent.get(destinationId)) {
+            path.add(0, destinationId);
+            destinationId = idToParent.get(destinationId);
         }
         if (!path.isEmpty()) {
-            path.add(0, destId);
+            path.add(0, destinationId);
         }
         return path;
     }
@@ -117,8 +116,8 @@ public class Router {
     private static class NDComparator implements Comparator<Long> {
         @Override
         public int compare(Long o1, Long o2) {
-            double ob1 = idToBestDistance.get(o1) + idToDistanceToGoal.get(o1),
-                    ob2 = idToBestDistance.get(o2) + idToDistanceToGoal.get(o2);
+            double ob1 = idToBestDistance.get(o1) + graph.distance(o1, destId),
+                    ob2 = idToBestDistance.get(o2) + graph.distance(o2, destId);
 
             double result = ob1 - ob2;
             if (result > 0) {
