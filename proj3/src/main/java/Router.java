@@ -212,7 +212,7 @@ public class Router {
 
     private static Set<String> findCommonWay(Set<String> one, Set<String> two) {
         Set<String> way = new HashSet<>();
-        if (one.isEmpty()) { // 只要左节点one的路名是空，那么右节点two也算在这条路上
+        if (one.isEmpty()) { // if one's name is null, two too.
             way.add("");
             return way;
         }

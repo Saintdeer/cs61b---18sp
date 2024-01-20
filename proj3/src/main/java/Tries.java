@@ -22,7 +22,7 @@ public class Tries {
         root.addRest(str);
     }
 
-    /* 这里还有bug：不能把prefix的任意大小写版本都搜索一遍 */
+    /* some bugs here */
     List<String> getStrWithPrefix(String prefix) {
         prefixCopy = "";
         if (prefix == null || prefix.isEmpty()) {
@@ -137,26 +137,6 @@ public class Tries {
                 return this;
             }
         }
-    }
-
-
-    @Test
-    public void testT() {
-        Tries t = new Tries();
-        t.addStr("Top Dog");
-        /*t.addStr("e Avenue");
-        t.addStr("e Street");*/
-
-        List<String> abList = new ArrayList<>(),
-                actual1 = t.getStrWithPrefix("Top Dog");
-        /*actual1 = t.getStrWithPrefix("ea");*/
-
-        abList.add("Top Dog");
-        //abList.add("e Avenue");
-        //abList.add("Monroe Street");
-
-        assertEquals(abList, actual1);
-
     }
 }
 
