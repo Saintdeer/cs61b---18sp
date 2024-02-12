@@ -46,7 +46,7 @@ public class RadixSort {
         int[] counts = new int[radix];
         for (String ascii : lastAsciis) {
             int offSet = length - ascii.length();
-            int i = '_';
+            int i = ' ';
             if (offSet <= index) {
                 i = ascii.charAt(ascii.length() - (index - offSet) - 1);
             }
@@ -63,7 +63,7 @@ public class RadixSort {
         String[] sorted = new String[asciis.length];
         for (String s : lastAsciis) {
             int offSet = length - s.length();
-            int i = '_';
+            int i = ' ';
             if (offSet <= index) {
                 i = s.charAt(s.length() - (index - offSet) - 1);
             }
