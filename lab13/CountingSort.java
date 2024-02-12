@@ -2,7 +2,6 @@
  * Class with 2 ways of doing Counting sort, one naive way and one "better" way
  *
  * @author Akhil Batra, Alexander Hwang
- *
  **/
 public class CountingSort {
     /**
@@ -66,7 +65,74 @@ public class CountingSort {
      * @param arr int array that will be sorted
      */
     public static int[] betterCountingSort(int[] arr) {
-        // TODO make counting sort work with arrays containing negative numbers.
-        return null;
+        // make counting sort work with arrays containing negative numbers.
+
+        // find max
+        int max = Integer.MIN_VALUE;
+        for (int i : arr) {
+            max = Math.max(max, i);
+        }
+
+        int[] nonNegativeCounts = null;
+        if (max >= 0) {
+            nonNegativeCounts = new int[max + 1];
+        }
+
+        // find min
+        int min = Integer.MAX_VALUE;
+        for (int i : arr) {
+            min = Math.min(min, i);
+        }
+
+        int[] negativeCounts = null;
+        if (min < 0) {
+            negativeCounts = new int[-min + 1];
+        }
+
+        for (int i : arr) {
+            if (i < 0) {
+                assert negativeCounts != null;
+                negativeCounts[-i]++;
+            } else {
+                assert nonNegativeCounts != null;
+                nonNegativeCounts[i]++;
+            }
+        }
+
+        int pos = 0;
+        int[] negativeStarts = null;
+        if (min < 0) {
+            negativeStarts = new int[-min + 1];
+            for (int i = negativeStarts.length - 1; i > 0; i -= 1) {
+                negativeStarts[i] = pos;
+                pos += negativeCounts[i];
+            }
+        }
+
+        int[] nonNegativeStarts = null;
+        if (max >= 0) {
+            nonNegativeStarts = new int[max + 1];
+            for (int i = 0; i < nonNegativeStarts.length; i += 1) {
+                nonNegativeStarts[i] = pos;
+                pos += nonNegativeCounts[i];
+            }
+        }
+
+        int[] sorted = new int[arr.length];
+        for (int item : arr) {
+            int place;
+            if (item < 0) {
+                assert negativeStarts != null;
+                place = negativeStarts[-item];
+                negativeStarts[-item] += 1;
+            } else {
+                assert nonNegativeStarts != null;
+                place = nonNegativeStarts[item];
+                nonNegativeStarts[item] += 1;
+            }
+            sorted[place] = item;
+        }
+
+        return sorted;
     }
 }
