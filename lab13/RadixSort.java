@@ -8,7 +8,6 @@ import org.junit.Test;
 public class RadixSort {
     static int length = 0;
     static int radix = 256;
-    static String[] lastAsciis;
 
     /**
      * Does LSD radix sort on the passed in array with the following restrictions:
@@ -21,15 +20,16 @@ public class RadixSort {
      */
     public static String[] sort(String[] asciis) {
         // Implement LSD Sort
-        lastAsciis = asciis;
-        for (String ascii : asciis) {
-            if (ascii.length() > length) {
-                length = ascii.length();
+        String[] lastAsciis = new String[asciis.length];
+        for (int i = 0; i < asciis.length; i++) {
+            lastAsciis[i] = asciis[i];
+            if (asciis[i].length() > length) {
+                length = asciis[i].length();
             }
         }
 
         for (int d = 0; d < length; d++) {
-            sortHelperLSD(asciis, d);
+            sortHelperLSD(lastAsciis, d);
         }
         return lastAsciis;
     }
@@ -44,7 +44,7 @@ public class RadixSort {
     private static void sortHelperLSD(String[] asciis, int index) {
         // Optional LSD helper method for required LSD radix sort
         int[] counts = new int[radix];
-        for (String ascii : lastAsciis) {
+        for (String ascii : asciis) {
             int offSet = length - ascii.length();
             int i = 0;
             if (offSet <= index) {
@@ -61,7 +61,7 @@ public class RadixSort {
         }
 
         String[] sorted = new String[asciis.length];
-        for (String s : lastAsciis) {
+        for (String s : asciis) {
             int offSet = length - s.length();
             int i = 0;
             if (offSet <= index) {
@@ -70,8 +70,7 @@ public class RadixSort {
             sorted[starts[i]] = s;
             starts[i]++;
         }
-        lastAsciis = sorted;
-        return;
+        asciis = sorted;
     }
 
     /**
@@ -90,7 +89,8 @@ public class RadixSort {
 
     @Test
     public void testNaiveWithNonNegative() {
-        String[] s = {"\u0016", "\u0016", "", "y", "à"};
+        char[] a = {0, 1};
+        String[] s = {"", String.valueOf(a), "", "y ", "à   "};
         String[] sorted = RadixSort.sort(s);
     }
 }
