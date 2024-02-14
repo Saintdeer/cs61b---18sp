@@ -8,6 +8,7 @@ import org.junit.Test;
 public class RadixSort {
     static int length = 0;
     static int radix = 256;
+    static String[] lastAsciis;
 
     /**
      * Does LSD radix sort on the passed in array with the following restrictions:
@@ -20,7 +21,7 @@ public class RadixSort {
      */
     public static String[] sort(String[] asciis) {
         // Implement LSD Sort
-        String[] lastAsciis = new String[asciis.length];
+        lastAsciis = new String[asciis.length];
         for (int i = 0; i < asciis.length; i++) {
             lastAsciis[i] = asciis[i];
             if (asciis[i].length() > length) {
@@ -70,7 +71,7 @@ public class RadixSort {
             sorted[starts[i]] = s;
             starts[i]++;
         }
-        asciis = sorted;
+        lastAsciis = sorted;
     }
 
     /**
