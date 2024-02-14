@@ -8,7 +8,7 @@ import org.junit.Test;
 public class RadixSort {
     static int length = 0;
     static int radix = 256;
-    static String[] lastAsciis;
+    static String[] previousAsciis;
 
     /**
      * Does LSD radix sort on the passed in array with the following restrictions:
@@ -21,18 +21,22 @@ public class RadixSort {
      */
     public static String[] sort(String[] asciis) {
         // Implement LSD Sort
-        lastAsciis = new String[asciis.length];
+
+        // compute length of the longest string and initialize the copy of asciis
+        previousAsciis = new String[asciis.length];
         for (int i = 0; i < asciis.length; i++) {
-            lastAsciis[i] = asciis[i];
+            previousAsciis[i] = asciis[i];
             if (asciis[i].length() > length) {
                 length = asciis[i].length();
             }
         }
 
+        // iterate asciis digit by digit
         for (int d = 0; d < length; d++) {
-            sortHelperLSD(lastAsciis, d);
+            sortHelperLSD(previousAsciis, d);
         }
-        return lastAsciis;
+
+        return previousAsciis;
     }
 
     /**
@@ -44,16 +48,19 @@ public class RadixSort {
      */
     private static void sortHelperLSD(String[] asciis, int index) {
         // Optional LSD helper method for required LSD radix sort
+
+        // compute counts array
         int[] counts = new int[radix];
         for (String ascii : asciis) {
             int offSet = length - ascii.length();
-            int i = 0;
+            int i = 0; // default ascii of each char
             if (offSet <= index) {
                 i = ascii.charAt(ascii.length() - (index - offSet) - 1);
             }
             counts[i]++;
         }
 
+        // compute starts array according to counts
         int[] starts = new int[radix];
         int pos = 0;
         for (int i = 0; i < starts.length; i += 1) {
@@ -61,6 +68,7 @@ public class RadixSort {
             pos += counts[i];
         }
 
+        // put the asciis into the right place according to the starts
         String[] sorted = new String[asciis.length];
         for (String s : asciis) {
             int offSet = length - s.length();
@@ -71,7 +79,7 @@ public class RadixSort {
             sorted[starts[i]] = s;
             starts[i]++;
         }
-        lastAsciis = sorted;
+        previousAsciis = sorted;
     }
 
     /**
