@@ -5,14 +5,14 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class SeamCarver {
-    Picture p;
-    double[][] energyMatrix;
-    static double[][] distToClassVer;
-    double[][] distTo;
-    int[] horizontalSeam = null, verticalSeam = null;
+    private Picture p;
+    private double[][] energyMatrix;
+    private static double[][] distToClassVer;
+    private double[][] distTo;
+    private int[] horizontalSeam = null, verticalSeam = null;
 
     public SeamCarver(Picture p) {
-        this.p = p;
+        this.p = new Picture(p);
         energyMatrix = new double[p.width()][p.height()];
         distTo = new double[p.width()][p.height()];
 
@@ -25,7 +25,7 @@ public class SeamCarver {
 
     // current picture
     public Picture picture() {
-        return p;
+        return new Picture(this.p);
     }
 
     // width of current picture
@@ -146,10 +146,11 @@ public class SeamCarver {
     public int[] findVerticalSeam() {
         changeEnergyMatrix();
 
-        distToClassVer = distTo;
         PriorityQueue<Integer> pq = new PriorityQueue<>(new IntegerComparator());
 
         int height = p.height(), width = p.width();
+        distTo = new double[width][height];
+        distToClassVer = distTo;
         int row = height - 1;
         int sum = row * width;
         for (int column = 0; column < width; column++) {
