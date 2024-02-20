@@ -35,7 +35,7 @@ public class SCUtility {
         for (int col = 0; col < sc.width(); col++)
             for (int row = 0; row < sc.height(); row++)
                 a[col][row] = sc.energy(col, row);
-        return a;        
+        return a;
     }
 
     // displays grayscale values as energy (converts to picture, calls show)
@@ -68,7 +68,7 @@ public class SCUtility {
                 }
             }
         }
-            
+
         if (maxVal == 0)
             return picture;  // return black picture
 
@@ -88,7 +88,7 @@ public class SCUtility {
     // pixels over the calculate seam.
     public static Picture seamOverlay(Picture picture, boolean isHorizontal, int[] seam) {
         Picture overlaid = new Picture(picture);
-        
+
         //if horizontal seam, set one pixel in every column
         if (isHorizontal) {
             for (int col = 0; col < picture.width(); col++)

@@ -13,6 +13,7 @@
  *  ******************************************************************************/
 
 import edu.princeton.cs.algs4.Picture;
+
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Toolkit;
@@ -38,7 +39,7 @@ public class SeamCarverVisualizer {
     public void visualizeHorizontalCarve(SeamCarver sc, int N) {
         for (int i = 0; i < N; i++) {
             int[] minSeam = sc.findHorizontalSeam();
-            Picture p = sc.picture();            
+            Picture p = sc.picture();
             paintHorizontalSeam(p, minSeam);
             show(p);
             sc.removeHorizontalSeam(minSeam);
@@ -83,7 +84,7 @@ public class SeamCarverVisualizer {
             JMenuItem menuItem1 = new JMenuItem(" Save...   ");
             menuItem1.addActionListener(img);
             menuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                                     Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             menu.add(menuItem1);
             frame.setJMenuBar(menuBar);
 
@@ -94,12 +95,12 @@ public class SeamCarverVisualizer {
             frame.setResizable(false);
             frame.pack();
             frame.setVisible(true);
-         }
+        }
 
-         // draw
-         frame.setContentPane(img.getJLabel());
-         frame.revalidate();
-         frame.repaint();
+        // draw
+        frame.setContentPane(img.getJLabel());
+        frame.revalidate();
+        frame.repaint();
     }
 
     public static void main(String[] args) {
