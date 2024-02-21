@@ -121,7 +121,7 @@ public class SeamCarver {
         int column = width - 1;
         for (int row = 0; row < height; row++) {
             distTo[column][row] = energyMatrix[column][row];
-            pq.add(width*(row + 1) - 1);
+            pq.add(width * (row + 1) - 1);
         }
 
         int smallestIndex;
@@ -139,7 +139,7 @@ public class SeamCarver {
             addHorizontalNeighbors(smallColumn, smallHeight, pq);
         }
 
-        return findHorizontalPath(smallestIndex/width);
+        return findHorizontalPath(smallestIndex / width);
     }
 
     private static class IntegerComparator implements Comparator<Integer> {
@@ -236,7 +236,8 @@ public class SeamCarver {
     }
 
     // from right to left
-    private void addHorizontalNeighbors(int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
+    private void addHorizontalNeighbors(
+            int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
         int width = p.width();
 
         double currentDistTo = distTo[smallColumn][smallHeight];
