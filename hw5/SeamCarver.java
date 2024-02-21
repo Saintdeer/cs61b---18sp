@@ -111,14 +111,35 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        Picture newP = new Picture(p.height(), p.width());
-        for (int x = 0; x < p.width(); x++) {
-            for (int y = 0; y < p.height(); y++) {
-                newP.set(y, x, p.get(x, y));
-            }
+        changeEnergyMatrix();
+
+        PriorityQueue<Integer> pq = new PriorityQueue<>(new IntegerComparator());
+
+        int height = p.height(), width = p.width();
+        distTo = new double[width][height];
+        distToClassVer = distTo;
+        int column = width - 1;
+        for (int row = 0; row < height; row++) {
+            distTo[column][row] = energyMatrix[column][row];
+            pq.add(width*(row + 1) - 1);
         }
-        SeamCarver sc = new SeamCarver(newP);
-        return sc.findVerticalSeam();
+
+        int smallestIndex;
+
+        // right to left
+        while (true) {
+            smallestIndex = pq.remove();
+            if (smallestIndex % width == 0) {
+                break;
+            }
+
+            int smallHeight = smallestIndex / width;
+            int smallColumn = smallestIndex - smallHeight * width;
+
+            addHorizontalNeighbors(smallColumn, smallHeight, pq);
+        }
+
+        return findHorizontalPath(smallestIndex/width);
     }
 
     private static class IntegerComparator implements Comparator<Integer> {
@@ -170,13 +191,14 @@ public class SeamCarver {
             int smallHeight = smallestIndex / width;
             int smallColumn = smallestIndex - smallHeight * width;
 
-            addNeighbors(smallColumn, smallHeight, pq);
+            addVerticalNeighbors(smallColumn, smallHeight, pq);
         }
 
-        return findPath(smallestIndex);
+        return findVerticalPath(smallestIndex);
     }
 
-    private void addNeighbors(int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
+    // from bottom to top
+    private void addVerticalNeighbors(int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
         int width = p.width();
 
         double currentDistTo = distTo[smallColumn][smallHeight];
@@ -213,7 +235,44 @@ public class SeamCarver {
         }
     }
 
-    private int[] findPath(int smallColumn) {
+    // from right to left
+    private void addHorizontalNeighbors(int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
+        int width = p.width();
+
+        double currentDistTo = distTo[smallColumn][smallHeight];
+        int topLeftRow = smallHeight - 1, lowLeftRow = smallHeight + 1;
+        int leftColumn = smallColumn - 1;
+
+        // add middle left
+        double old = distTo[leftColumn][smallHeight];
+        double nextDistTo = currentDistTo + energyMatrix[leftColumn][smallHeight];
+        if (old == 0) {
+            distTo[leftColumn][smallHeight] = nextDistTo;
+            pq.add(smallHeight * width + leftColumn);
+        }
+
+        // add top left
+        if (topLeftRow >= 0) {
+            old = distTo[leftColumn][topLeftRow];
+            nextDistTo = currentDistTo + energyMatrix[leftColumn][topLeftRow];
+            if (old == 0) {
+                distTo[leftColumn][topLeftRow] = nextDistTo;
+                pq.add(topLeftRow * width + leftColumn);
+            }
+        }
+
+        // add low left
+        if (lowLeftRow < p.height()) {
+            old = distTo[leftColumn][lowLeftRow];
+            nextDistTo = currentDistTo + energyMatrix[leftColumn][lowLeftRow];
+            if (old == 0) {
+                distTo[leftColumn][lowLeftRow] = nextDistTo;
+                pq.add(lowLeftRow * width + leftColumn);
+            }
+        }
+    }
+
+    private int[] findVerticalPath(int smallColumn) {
         int width = p.width(), height = p.height();
         int smallHeight = 0;
 
@@ -234,6 +293,34 @@ public class SeamCarver {
                     path[lowRow] = lowColumn;
                     smallColumn = lowColumn;
                     smallHeight = lowRow;
+                    break;
+                }
+            }
+        }
+        return path;
+    }
+
+    private int[] findHorizontalPath(int smallRow) {
+        int width = p.width(), height = p.height();
+        int smallColumn = 0;
+
+        int[] path = new int[width];
+        path[0] = smallRow;
+
+        // left to right
+        for (int leftColumn = 1; leftColumn < width; leftColumn++) {
+            for (int offset = -1; offset <= 1; offset++) {
+                int row = smallRow + offset;
+                if (row < 0 || row >= height) {
+                    continue;
+                }
+
+                double differenceEnergy = distTo[smallColumn][smallRow]
+                        - distTo[leftColumn][row];
+                if (differenceEnergy == energyMatrix[smallColumn][smallRow]) {
+                    path[leftColumn] = row;
+                    smallRow = row;
+                    smallColumn = leftColumn;
                     break;
                 }
             }
