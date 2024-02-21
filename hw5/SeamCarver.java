@@ -12,12 +12,14 @@ public class SeamCarver {
     private int[] horizontalSeam = null, verticalSeam = null;
 
     public SeamCarver(Picture p) {
-        this.p = new Picture(p);
-        energyMatrix = new double[p.width()][p.height()];
-        distTo = new double[p.width()][p.height()];
+        int width = p.width(), height = p.height();
 
-        for (int x = 0; x < p.width(); x++) {
-            for (int y = 0; y < p.height(); y++) {
+        this.p = new Picture(p);
+        energyMatrix = new double[width][height];
+        distTo = new double[width][height];
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 energyMatrix[x][y] = energy(x, y);
             }
         }
@@ -40,14 +42,16 @@ public class SeamCarver {
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
-        if (x < 0 || x >= p.width() || y < 0 || y >= p.height()) {
+        int width = p.width(), height = p.height();
+
+        if (x < 0 || x >= width || y < 0 || y >= height) {
             throw new IndexOutOfBoundsException();
         }
 
-        int leftX = x == 0 ? p.width() - 1 : x - 1,
-                rightX = x == p.width() - 1 ? 0 : x + 1,
-                upY = y == 0 ? p.height() - 1 : y - 1,
-                downY = y == p.height() - 1 ? 0 : y + 1;
+        int leftX = x == 0 ? width - 1 : x - 1,
+                rightX = x == width - 1 ? 0 : x + 1,
+                upY = y == 0 ? height - 1 : y - 1,
+                downY = y == height - 1 ? 0 : y + 1;
 
         Color leftC = p.get(leftX, y),
                 rightC = p.get(rightX, y),
@@ -70,11 +74,13 @@ public class SeamCarver {
     }
 
     private void changeEnergyMatrix() {
-        double[][] newEnergyMatrix = new double[p.width()][p.height()];
+        int width = p.width(), height = p.height();
+        double[][] newEnergyMatrix = new double[width][height];
+
         if (horizontalSeam != null) {
             int column = 0;
             for (int changedIndex : horizontalSeam) {
-                for (int row = 0; row < p.height(); row++) {
+                for (int row = 0; row < height; row++) {
                     if (row == changedIndex - 1 || row == changedIndex) {
                         newEnergyMatrix[column][row] = energy(column, row);
                     } else if (row > changedIndex) {
@@ -89,7 +95,7 @@ public class SeamCarver {
         } else if (verticalSeam != null) {
             int row = 0;
             for (int changedIndex : verticalSeam) {
-                for (int column = 0; column < p.width(); column++) {
+                for (int column = 0; column < width; column++) {
                     if (column == changedIndex - 1 || column == changedIndex) {
                         newEnergyMatrix[column][row] = energy(column, row);
                     } else if (column > changedIndex) {
@@ -222,21 +228,22 @@ public class SeamCarver {
 
     // from bottom to top
     /* 1 2 3
-     *  4 5 6
-     *  7 8 9 */
+     * 4 5 6
+     * 7 8 9 */
     private void addVerticalNeighbors(int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
         int width = p.width();
 
         double currentDistTo = distTo[smallColumn][smallHeight];
         int topLeftColumn = smallColumn - 1, topRightColumn = smallColumn + 1;
         int topRow = smallHeight - 1;
+        int sum = topRow * width;
 
         // add top middle
         double old = distTo[smallColumn][topRow];
         double current = currentDistTo + energyMatrix[smallColumn][topRow];
         if (old == 0) {
             distTo[smallColumn][topRow] = current;
-            pq.add(topRow * width + smallColumn);
+            pq.add(sum + smallColumn);
         }
 
 
@@ -246,7 +253,7 @@ public class SeamCarver {
             current = currentDistTo + energyMatrix[topLeftColumn][topRow];
             if (old == 0) {
                 distTo[topLeftColumn][topRow] = current;
-                pq.add(topRow * width + topLeftColumn);
+                pq.add(sum + topLeftColumn);
             }
         }
 
@@ -256,15 +263,15 @@ public class SeamCarver {
             current = currentDistTo + energyMatrix[topRightColumn][topRow];
             if (old == 0) {
                 distTo[topRightColumn][topRow] = current;
-                pq.add(topRow * width + topRightColumn);
+                pq.add(sum + topRightColumn);
             }
         }
     }
 
     // from right to left
     /* 1 4 7
-     *  2 5 8
-     *  3 6 9 */
+     * 2 5 8
+     * 3 6 9 */
     private void addHorizontalNeighbors(
             int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
         int height = p.height();
@@ -272,13 +279,14 @@ public class SeamCarver {
         double currentDistTo = distTo[smallColumn][smallHeight];
         int topLeftRow = smallHeight - 1, lowLeftRow = smallHeight + 1;
         int leftColumn = smallColumn - 1;
+        int sum = leftColumn * height;
 
         // add middle left
         double old = distTo[leftColumn][smallHeight];
         double nextDistTo = currentDistTo + energyMatrix[leftColumn][smallHeight];
         if (old == 0) {
             distTo[leftColumn][smallHeight] = nextDistTo;
-            pq.add(leftColumn * height + smallHeight);
+            pq.add(sum + smallHeight);
         }
 
         // add top left
@@ -287,7 +295,7 @@ public class SeamCarver {
             nextDistTo = currentDistTo + energyMatrix[leftColumn][topLeftRow];
             if (old == 0) {
                 distTo[leftColumn][topLeftRow] = nextDistTo;
-                pq.add(leftColumn * height + topLeftRow);
+                pq.add(sum + topLeftRow);
             }
         }
 
@@ -297,7 +305,7 @@ public class SeamCarver {
             nextDistTo = currentDistTo + energyMatrix[leftColumn][lowLeftRow];
             if (old == 0) {
                 distTo[leftColumn][lowLeftRow] = nextDistTo;
-                pq.add(leftColumn * height + lowLeftRow);
+                pq.add(sum + lowLeftRow);
             }
         }
     }
