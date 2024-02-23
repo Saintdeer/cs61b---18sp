@@ -64,7 +64,7 @@ public class SeamCarver {
         return xr * xr + xg * xg + xb * xb + yr * yr + yg * yg + yb * yb;
     }
 
-    private void changeEnergyMatrix() {
+    private void setEnergyMatrix() {
         int width = p.width(), height = p.height();
         double[][] newEnergyMatrix = new double[width][height];
 
@@ -168,7 +168,7 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        changeEnergyMatrix();
+        setEnergyMatrix();
         setDistTo(true);
 
         int smallestIndex = 0, height = p.height();
@@ -186,7 +186,7 @@ public class SeamCarver {
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-        changeEnergyMatrix();
+        setEnergyMatrix();
         setDistTo(false);
 
         int smallestIndex = 0, width = p.width();
