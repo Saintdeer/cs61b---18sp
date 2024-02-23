@@ -1,13 +1,9 @@
 import edu.princeton.cs.algs4.Picture;
-
 import java.awt.Color;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 
 public class SeamCarver {
     private Picture p;
     private double[][] energyMatrix;
-    private static double[][] distToClassVer;
     private double[][] distTo;
     private int[] horizontalSeam = null, verticalSeam = null;
 
@@ -16,7 +12,6 @@ public class SeamCarver {
 
         this.p = new Picture(p);
         energyMatrix = new double[width][height];
-        distTo = new double[width][height];
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -27,7 +22,7 @@ public class SeamCarver {
 
     // current picture
     public Picture picture() {
-        return new Picture(this.p);
+        return new Picture(p);
     }
 
     // width of current picture
@@ -58,19 +53,15 @@ public class SeamCarver {
                 upC = p.get(x, upY),
                 downC = p.get(x, downY);
 
-        double deltaX = squareOfDifference(leftC.getRed(), rightC.getRed())
-                + squareOfDifference(leftC.getBlue(), rightC.getBlue())
-                + squareOfDifference(leftC.getGreen(), rightC.getGreen()),
-                deltaY = squareOfDifference(upC.getRed(), downC.getRed())
-                        + squareOfDifference(upC.getGreen(), downC.getGreen())
-                        + squareOfDifference(upC.getBlue(), downC.getBlue());
+        double xr, xg, xb, yr, yg, yb;
+        xr = leftC.getRed() - rightC.getRed();
+        xg = leftC.getGreen() - rightC.getGreen();
+        xb = leftC.getBlue() - rightC.getBlue();
+        yr = upC.getRed() - downC.getRed();
+        yg = upC.getGreen() - downC.getGreen();
+        yb = upC.getBlue() - downC.getBlue();
 
-        return deltaX + deltaY;
-    }
-
-    private double squareOfDifference(int rgb1, int rgb2) {
-        double abs = rgb1 > rgb2 ? rgb1 - rgb2 : rgb2 - rgb1;
-        return abs * abs;
+        return xr * xr + xg * xg + xb * xb + yr * yr + yg * yg + yb * yb;
     }
 
     private void changeEnergyMatrix() {
@@ -89,9 +80,10 @@ public class SeamCarver {
                         newEnergyMatrix[column][row] = energyMatrix[column][row];
                     }
                 }
-
                 column++;
             }
+            energyMatrix = newEnergyMatrix;
+            horizontalSeam = null;
         } else if (verticalSeam != null) {
             int row = 0;
             for (int changedIndex : verticalSeam) {
@@ -104,215 +96,112 @@ public class SeamCarver {
                         newEnergyMatrix[column][row] = energyMatrix[column][row];
                     }
                 }
-
                 row++;
             }
-        } else {
-            return;
+            energyMatrix = newEnergyMatrix;
+            verticalSeam = null;
         }
-        horizontalSeam = null;
-        verticalSeam = null;
-        energyMatrix = newEnergyMatrix;
+    }
+
+    private void setDistTo(boolean isHorizontal) {
+        int width = p.width(), height = p.height();
+        distTo = new double[width][height];
+
+        if (isHorizontal) { // from right to left
+            int rightColumn = width - 1;
+            System.arraycopy(energyMatrix[rightColumn], 0, distTo[rightColumn], 0, height);
+
+            for (int column = rightColumn - 1; column >= 0; column--) {
+                for (int row = 0; row < height; row++) {
+                    distTo[column][row] = minDistTo(column, row, false)
+                            + energyMatrix[column][row];
+                }
+            }
+        } else { // from bottom to top
+            int deepRow = height - 1;
+            for (int column = 0; column < width; column++) {
+                distTo[column][deepRow] = energyMatrix[column][deepRow];
+            }
+
+            for (int row = deepRow - 1; row >= 0; row--) {
+                for (int column = 0; column < width; column++) {
+                    distTo[column][row] = minDistTo(column, row, true)
+                            + energyMatrix[column][row];
+                }
+            }
+        }
+    }
+
+    private double minDistTo(int column, int row, boolean isVertical) {
+        int width = p.width(), height = p.height();
+        double[] minDist = new double[3];
+
+        if (isVertical) {
+            int downRow = row + 1;
+            int leftColumn, rightColumn;
+            leftColumn = column == 0 ? column : column - 1;
+            rightColumn = column == width - 1 ? column : column + 1;
+
+            minDist[0] = distTo[leftColumn][downRow];
+            minDist[1] = distTo[column][downRow];
+            minDist[2] = distTo[rightColumn][downRow];
+        } else {
+            int rightColumn = column + 1;
+            int upRow, downRow;
+            upRow = row == 0 ? row : row - 1;
+            downRow = row == height - 1 ? row : row + 1;
+
+            minDist[0] = distTo[rightColumn][upRow];
+            minDist[1] = distTo[rightColumn][row];
+            minDist[2] = distTo[rightColumn][downRow];
+        }
+
+        double min = minDist[0];
+        for (double dist : minDist) {
+            if (min > dist) {
+                min = dist;
+            }
+        }
+
+        return min;
     }
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
         changeEnergyMatrix();
+        setDistTo(true);
 
-        PriorityQueue<Integer> pq = new PriorityQueue<>(new IntegerHorizontalComparator());
-
-        int height = p.height(), width = p.width();
-        distTo = new double[width][height];
-        distToClassVer = distTo;
-
-        int column = width - 1;
-        int sum = column * height;
-        for (int row = 0; row < height; row++) {
-            distTo[column][row] = energyMatrix[column][row];
-            pq.add(sum + row);
-        }
-
-        int smallestIndex;
-
-        // right to left
-        while (true) {
-            smallestIndex = pq.remove();
-            if (smallestIndex < height) {
-                break;
+        int smallestIndex = 0, height = p.height();
+        double newDistTo, smallDistTo = distTo[0][smallestIndex];
+        for (int row = 1; row < height; row++) {
+            newDistTo = distTo[0][row];
+            if (smallDistTo > newDistTo) {
+                smallestIndex = row;
+                smallDistTo = newDistTo;
             }
-
-            int smallColumn = smallestIndex / height;
-            int smallHeight = smallestIndex - smallColumn * height;
-
-            addHorizontalNeighbors(smallColumn, smallHeight, pq);
         }
 
         return findHorizontalPath(smallestIndex);
     }
 
-    private static class IntegerVerticalComparator implements Comparator<Integer> {
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            int width = distToClassVer.length;
-
-            int height1 = o1 / width, height2 = o2 / width;
-
-            double energy1 = distToClassVer[o1 - height1 * width][height1];
-            double energy2 = distToClassVer[o2 - height2 * width][height2];
-
-            double difference = energy1 - energy2;
-            if (difference < 0) {
-                return -1;
-            } else if (difference == 0) {
-                return 0;
-            } else {
-                return 1;
-            }
-        }
-    }
-
-    private static class IntegerHorizontalComparator implements Comparator<Integer> {
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            int height = distToClassVer[0].length;
-
-            int column1 = o1 / height, column2 = o2 / height;
-
-            double energy1 = distToClassVer[column1][o1 - column1 * height];
-            double energy2 = distToClassVer[column2][o2 - column2 * height];
-
-            double difference = energy1 - energy2;
-            if (difference < 0) {
-                return -1;
-            } else if (difference == 0) {
-                return 0;
-            } else {
-                return 1;
-            }
-        }
-    }
-
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
         changeEnergyMatrix();
+        setDistTo(false);
 
-        PriorityQueue<Integer> pq = new PriorityQueue<>(new IntegerVerticalComparator());
-
-        int height = p.height(), width = p.width();
-        distTo = new double[width][height];
-        distToClassVer = distTo;
-        int row = height - 1;
-        int sum = row * width;
-        for (int column = 0; column < width; column++) {
-            distTo[column][row] = energyMatrix[column][row];
-            pq.add(sum + column);
-        }
-
-        int smallestIndex;
-
-        // bottom to top
-        while (true) {
-            smallestIndex = pq.remove();
-            if (smallestIndex < width) {
-                break;
+        int smallestIndex = 0, width = p.width();
+        double newDistTo, smallDistTo = distTo[smallestIndex][0];
+        for (int column = 1; column < width; column++) {
+            newDistTo = distTo[column][0];
+            if (smallDistTo > newDistTo) {
+                smallestIndex = column;
+                smallDistTo = newDistTo;
             }
-
-            int smallHeight = smallestIndex / width;
-            int smallColumn = smallestIndex - smallHeight * width;
-
-            addVerticalNeighbors(smallColumn, smallHeight, pq);
         }
 
         return findVerticalPath(smallestIndex);
     }
 
-    // from bottom to top
-    /* 1 2 3
-     * 4 5 6
-     * 7 8 9 */
-    private void addVerticalNeighbors(int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
-        int width = p.width();
-
-        double currentDistTo = distTo[smallColumn][smallHeight];
-        int topLeftColumn = smallColumn - 1, topRightColumn = smallColumn + 1;
-        int topRow = smallHeight - 1;
-        int sum = topRow * width;
-
-        // add top middle
-        double old = distTo[smallColumn][topRow];
-        double current = currentDistTo + energyMatrix[smallColumn][topRow];
-        if (old == 0) {
-            distTo[smallColumn][topRow] = current;
-            pq.add(sum + smallColumn);
-        }
-
-
-        // add top left
-        if (topLeftColumn >= 0) {
-            old = distTo[topLeftColumn][topRow];
-            current = currentDistTo + energyMatrix[topLeftColumn][topRow];
-            if (old == 0) {
-                distTo[topLeftColumn][topRow] = current;
-                pq.add(sum + topLeftColumn);
-            }
-        }
-
-        // add top right
-        if (topRightColumn < width) {
-            old = distTo[topRightColumn][topRow];
-            current = currentDistTo + energyMatrix[topRightColumn][topRow];
-            if (old == 0) {
-                distTo[topRightColumn][topRow] = current;
-                pq.add(sum + topRightColumn);
-            }
-        }
-    }
-
-    // from right to left
-    /* 1 4 7
-     * 2 5 8
-     * 3 6 9 */
-    private void addHorizontalNeighbors(
-            int smallColumn, int smallHeight, PriorityQueue<Integer> pq) {
-        int height = p.height();
-
-        double currentDistTo = distTo[smallColumn][smallHeight];
-        int topLeftRow = smallHeight - 1, lowLeftRow = smallHeight + 1;
-        int leftColumn = smallColumn - 1;
-        int sum = leftColumn * height;
-
-        // add middle left
-        double old = distTo[leftColumn][smallHeight];
-        double nextDistTo = currentDistTo + energyMatrix[leftColumn][smallHeight];
-        if (old == 0) {
-            distTo[leftColumn][smallHeight] = nextDistTo;
-            pq.add(sum + smallHeight);
-        }
-
-        // add top left
-        if (topLeftRow >= 0) {
-            old = distTo[leftColumn][topLeftRow];
-            nextDistTo = currentDistTo + energyMatrix[leftColumn][topLeftRow];
-            if (old == 0) {
-                distTo[leftColumn][topLeftRow] = nextDistTo;
-                pq.add(sum + topLeftRow);
-            }
-        }
-
-        // add low left
-        if (lowLeftRow < p.height()) {
-            old = distTo[leftColumn][lowLeftRow];
-            nextDistTo = currentDistTo + energyMatrix[leftColumn][lowLeftRow];
-            if (old == 0) {
-                distTo[leftColumn][lowLeftRow] = nextDistTo;
-                pq.add(sum + lowLeftRow);
-            }
-        }
-    }
-
-    /* 1 2 3
-     * 4 5 6
-     * 7 8 9 */
     private int[] findVerticalPath(int smallColumn) {
         int width = p.width(), height = p.height();
         int smallHeight = 0;
@@ -341,9 +230,6 @@ public class SeamCarver {
         return path;
     }
 
-    /* 1 4 7
-     * 2 5 8
-     * 3 6 9 */
     private int[] findHorizontalPath(int smallRow) {
         int width = p.width(), height = p.height();
         int smallColumn = 0;
@@ -378,7 +264,6 @@ public class SeamCarver {
 
         p = SeamRemover.removeHorizontalSeam(p, seam);
         horizontalSeam = seam;
-        changeEnergyMatrix();
     }
 
     // remove vertical seam from picture
@@ -387,7 +272,6 @@ public class SeamCarver {
 
         p = SeamRemover.removeVerticalSeam(p, seam);
         verticalSeam = seam;
-        changeEnergyMatrix();
     }
 
     private void check(int[] seam, int length) {
