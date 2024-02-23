@@ -1,4 +1,5 @@
 import edu.princeton.cs.algs4.Picture;
+
 import java.awt.Color;
 
 public class SeamCarver {
@@ -262,6 +263,10 @@ public class SeamCarver {
     public void removeHorizontalSeam(int[] seam) {
         check(seam, p.width());
 
+        if (p.height() <= 1) {
+            return;
+        }
+
         p = SeamRemover.removeHorizontalSeam(p, seam);
         horizontalSeam = seam;
     }
@@ -269,6 +274,10 @@ public class SeamCarver {
     // remove vertical seam from picture
     public void removeVerticalSeam(int[] seam) {
         check(seam, p.height());
+
+        if (p.width() <= 1) {
+            return;
+        }
 
         p = SeamRemover.removeVerticalSeam(p, seam);
         verticalSeam = seam;
