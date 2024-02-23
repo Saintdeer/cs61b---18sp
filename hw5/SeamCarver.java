@@ -261,9 +261,9 @@ public class SeamCarver {
 
     // remove horizontal seam from picture
     public void removeHorizontalSeam(int[] seam) {
-        check(seam, p.width());
+        lengthCheck(seam, p.width());
 
-        if (p.height() <= 1) {
+        if (pictureLengthLessThanTwo()) {
             return;
         }
 
@@ -273,9 +273,8 @@ public class SeamCarver {
 
     // remove vertical seam from picture
     public void removeVerticalSeam(int[] seam) {
-        check(seam, p.height());
-
-        if (p.width() <= 1) {
+        lengthCheck(seam, p.height());
+        if (pictureLengthLessThanTwo()) {
             return;
         }
 
@@ -283,7 +282,7 @@ public class SeamCarver {
         verticalSeam = seam;
     }
 
-    private void check(int[] seam, int length) {
+    private void lengthCheck(int[] seam, int length) {
         if (seam.length != length) {
             throw new IllegalArgumentException();
         }
@@ -296,5 +295,9 @@ public class SeamCarver {
             }
             first = s;
         }
+    }
+
+    private boolean pictureLengthLessThanTwo() {
+        return p.width() < 2 || p.height() < 2;
     }
 }
