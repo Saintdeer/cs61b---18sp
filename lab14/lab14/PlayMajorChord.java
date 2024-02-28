@@ -1,7 +1,9 @@
 package lab14;
 
 import lab14lib.Generator;
+
 import java.util.ArrayList;
+
 import lab14lib.GeneratorAudioVisualizer;
 import lab14lib.MultiGenerator;
 
