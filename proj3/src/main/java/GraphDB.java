@@ -27,16 +27,26 @@ public class GraphDB {
      * Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc.
      */
+
+    /* all nodes with lat and lon */
     Map<Long, Node> rowNodes = new HashMap<>();
+
+    /* all nodes with relationships */
     Map<Long, Node> validNodes = new HashMap<>();
+
+    /* all nodes with name in rowNodes, maybe not valid */
     Map<Long, Node> nameNodes = new HashMap<>();
     Set<Long> ids = new HashSet<>();
+
+    /* names in nameNodes*/
     Tries names = new Tries();
     Map<String, List<Long>> cleanNameToId = new HashMap<>();
 
     static class Node {
         long id;
         double lon, lat;
+        double moves = Double.MAX_VALUE, distanceToGoal = 0;
+        long preId = Long.MAX_VALUE, startId = Long.MAX_VALUE, destId = Long.MAX_VALUE;
         Map<String, String> info = new HashMap<>();
         Set<Long> adjacent = new HashSet<>();
         Set<String> way = new HashSet<>();
@@ -58,12 +68,12 @@ public class GraphDB {
 
     /* add nodes of the way to graphdb when way is valid,
         and add adjacent relationships on this way*/
-    void addNode(Way way) {
+    void addValidNodesOfWay(Way way) {
         Iterable<Long> nodeIdIterable = way.nodesIdOfWay;
 
         /* if number of nodes of the way less than 2, there's no edges */
         int count = 0;
-        for (Long nodeId : nodeIdIterable) {
+        for (Long ignored : nodeIdIterable) {
             count++;
             if (count > 1) {
                 break;
@@ -84,16 +94,6 @@ public class GraphDB {
             String wayName = way.info.get("name");
             if (wayName != null) {
                 node.way.add(wayName);
-                names.addStr(wayName);
-
-                String cleanWayName = cleanString(wayName);
-                if (cleanNameToId.containsKey(cleanWayName)) {
-                    cleanNameToId.get(cleanWayName).add(way.id);
-                } else {
-                    List<Long> lst = new ArrayList<>();
-                    lst.add(way.id);
-                    cleanNameToId.put(cleanWayName, lst);
-                }
             }
             oldNode = node;
         }

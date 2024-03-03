@@ -1,45 +1,41 @@
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import org.junit.Test;
+import java.util.*;
+
 
 public class Tries {
     Node root;
-    String prefixCopy = "";
 
     public Tries() {
-        root = new Node(null);
+        root = new Node(null, null);
     }
 
     void addStr(String str) {
-        if (str == null || str.isEmpty()) {
+        if (illegal(str)) {
             return;
         }
         root.addRest(str);
     }
-
-    /* some bugs here */
+    
     List<String> getStrWithPrefix(String prefix) {
-        prefixCopy = "";
-        if (prefix == null || prefix.isEmpty()) {
+        if (illegal(prefix)) {
             return null;
         }
-        char first = prefix.charAt(0),
-                lower = Character.toLowerCase(first),
-                upper = Character.toUpperCase(first);
+
+        char first, lower, upper;
+        first = prefix.charAt(0);
+        lower = Character.toLowerCase(first);
+        upper = Character.toUpperCase(first);
 
         List<String> result = new ArrayList<>();
         Map<Character, Node> rootNext = root.next;
+
         if (rootNext.containsKey(lower)) {
-            prefixCopy += lower;
             result = (rootNext.get(lower).stringWithPrefix(prefix, this));
         }
 
-        prefixCopy = "";
         if (rootNext.containsKey(upper)) {
-            prefixCopy += upper;
             List<String> result2 = rootNext.get(upper).stringWithPrefix(prefix, this);
-            if (result == null || result.isEmpty()) {
+            if (result.isEmpty()) {
                 result = result2;
             } else {
                 result.addAll(result2);
@@ -49,16 +45,23 @@ public class Tries {
         return result;
     }
 
+    static boolean illegal(String str) {
+        return str == null || str.isEmpty();
+    }
+
     static class Node {
         char ch;
         boolean isKey = false;
+        Node preNode;
         Map<Character, Node> next = new HashMap<>();
 
-        Node(String str) {
-            if (str == null || str.isEmpty()) {
+        Node(String str, Node preNode) {
+            if (illegal(str)) {
                 return;
             }
             ch = str.charAt(0);
+            this.preNode = preNode;
+
             String rest = str.substring(1);
             if (!rest.isEmpty()) {
                 addRest(rest);
@@ -68,33 +71,39 @@ public class Tries {
         }
 
         void addRest(String str) {
-            if (str == null || str.isEmpty()) {
+            if (illegal(str)) {
                 return;
             }
             char first = str.charAt(0);
             if (next.containsKey(first)) {
                 next.get(first).addRest(str.substring(1));
             } else {
-                next.put(first, new Node(str));
+                next.put(first, new Node(str, this));
             }
         }
 
         List<String> stringWithPrefix(String prefix, Tries t) {
             List<String> stringsOfSuffix = new ArrayList<>();
 
-            Node prefixNode = findPrefixNode(prefix, t);
-            if (prefixNode == null) {
-                return new ArrayList<>();
-            }
-
-            String prefixCopy = t.prefixCopy;
-            if (prefixNode.isKey) {
-                stringsOfSuffix.add(prefixCopy);
-            }
-            for (Node suffixNode : prefixNode.next.values()) {
-                suffixNode.findSuffix(prefixCopy, stringsOfSuffix);
+            List<Node> prefixNodes = findPrefixNode(prefix, t);
+            for (Node prefixNode : prefixNodes) {
+                String prefixCopy = getPrefix("", prefixNode);
+                if (prefixNode.isKey) {
+                    stringsOfSuffix.add(prefixCopy);
+                }
+                for (Node suffixNode : prefixNode.next.values()) {
+                    suffixNode.findSuffix(prefixCopy, stringsOfSuffix);
+                }
             }
             return stringsOfSuffix;
+        }
+
+        String getPrefix(String str, Node node) {
+            if (node.preNode.preNode == null) {
+                return node.ch + str;
+            } else {
+                return getPrefix(node.ch + str, node.preNode);
+            }
         }
 
         void findSuffix(String prefix, List<String> result) {
@@ -107,32 +116,48 @@ public class Tries {
             }
         }
 
-        Node findPrefixNode(String prefix, Tries t) {
+        List<Node> findPrefixNode(String prefix, Tries t) {
+            List<Node> result = new LinkedList<>();
+
             if (prefix.length() > 1) {
-                char secondChar = prefix.charAt(1),
-                        lower = Character.toLowerCase(secondChar),
-                        upper = Character.toUpperCase(secondChar);
-                Node second = null;
+                char secondChar, lower, upper;
+                secondChar = prefix.charAt(1);
+                lower = Character.toLowerCase(secondChar);
+                upper = Character.toUpperCase(secondChar);
+
+                List<Node> second = new LinkedList<>();
                 String searchPrefix = prefix.substring(1);
                 if (next.containsKey(upper)) {
-                    t.prefixCopy += upper;
-                    second = next.get(upper);
-                } else if (next.containsKey(lower)) {
-                    t.prefixCopy += lower;
-                    second = next.get(lower);
-                } else if (next.containsKey(' ')) {
-                    t.prefixCopy += ' ';
-                    second = next.get(' ');
-                    searchPrefix = prefix;
+                    second.add(next.get(upper));
                 }
-                if (second == null) {
-                    return null;
+                if (next.containsKey(lower)) {
+                    second.add(next.get(lower));
                 }
-                return second.findPrefixNode(searchPrefix, t);
+
+                // I'm not sure if it's necessary
+                if (second.isEmpty() && next.containsKey(' ')) {
+                    result.addAll(next.get(' ').findPrefixNode(prefix, t));
+                }
+
+                for (Node n : second) {
+                    result.addAll(n.findPrefixNode(searchPrefix, t));
+                }
             } else {
-                return this;
+                result.add(this);
             }
+
+            return result;
         }
+    }
+
+    @Test
+    public void test() {
+        Tries t = new Tries();
+        t.addStr("Monterey Av & The Alameda");
+        t.addStr("Monte Vista Food");
+
+        List<String> strings1 = t.getStrWithPrefix("m");
+
     }
 }
 

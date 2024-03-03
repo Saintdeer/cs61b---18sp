@@ -2,11 +2,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
@@ -174,7 +170,7 @@ public class GraphBuildingHandler extends DefaultHandler {
             chance to actually connect the nodes together if the way is valid. */
 //            System.out.println("Finishing a way...");
             if (currentWay.valid) {
-                g.addNode(currentWay);
+                g.addValidNodesOfWay(currentWay);
             }
         }
     }
