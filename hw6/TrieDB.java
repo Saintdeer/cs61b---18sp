@@ -89,6 +89,7 @@ public class TrieDB {
         }
 
         String[] stringsSorted = RadixSort.sort(strSet.toArray(new String[0]));
+        length = Math.min(length, strSet.size());
         return Arrays.asList(Arrays.copyOfRange(stringsSorted, 0, length));
     }
 
