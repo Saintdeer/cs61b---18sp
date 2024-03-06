@@ -2,10 +2,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Trie {
-    private Node root;
+    private final Node root;
 
-    private class Node {
-        private Map<Character, Node> next;
+    private static class Node {
+        private final Map<Character, Node> next;
         private boolean isKey;
 
         private Node() {

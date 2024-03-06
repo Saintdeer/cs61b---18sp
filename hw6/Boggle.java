@@ -11,12 +11,13 @@ import static org.junit.Assert.assertArrayEquals;
 public class Boggle {
     static String dictPath = "words.txt";
     private static int width, height;
-    private static Set<String> stringSet = new HashSet<>();
+    private static Set<String> stringSet;
     private static boolean[][] visited;
     private static char[][] chars;
     private static Trie dictTrie;
 
     public static List<String> solve(int k, String boardFilePath) {
+        stringSet = new HashSet<>();
         check(k, new In(boardFilePath));
 
         visited = new boolean[width][height];
@@ -27,10 +28,12 @@ public class Boggle {
             dictTrie.addString(str);
         }
 
-        int column1 = 0;
+        int row1 = 0;
         for (String str : new In(boardFilePath).readAllStrings()) {
-            chars[column1] = str.toCharArray();
-            column1++;
+            for (int column1 = 0; column1 < width; column1++) {
+                chars[column1][row1] = str.charAt(column1);
+            }
+            row1++;
         }
 
         for (int column = 0; column < width; column++) {
