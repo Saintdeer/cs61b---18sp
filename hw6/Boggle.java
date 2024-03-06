@@ -1,110 +1,105 @@
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
-
+import java.util.HashSet;
 import edu.princeton.cs.introcs.In;
 import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 
 public class Boggle {
-
-    // File path of dictionary file
     static String dictPath = "words.txt";
+    private static int width, height;
+    private static Set<String> stringSet = new HashSet<>();
+    private static boolean[][] visited;
+    private static char[][] chars;
+    private static Trie dictTrie;
 
-    /**
-     * Solves a Boggle puzzle.
-     *
-     * @param k             The maximum number of words to return.
-     * @param boardFilePath The file path to Boggle board file.
-     * @return a list of words found in given Boggle board.
-     * The Strings are sorted in descending order of length.
-     * If multiple words have the same length,
-     * have them in ascending alphabetical order.
-     */
     public static List<String> solve(int k, String boardFilePath) {
-        // YOUR CODE HERE
-        check(k, new In(dictPath), new In(boardFilePath));
+        check(k, new In(boardFilePath));
 
-        TrieDB dictTrie, boardTrie;
-        dictTrie = new TrieDB(new In(dictPath));
-        boardTrie = new TrieDB(dictTrie);
+        visited = new boolean[width][height];
+        chars = new char[width][height];
 
-        TrieDB.Node currentNode = boardTrie.getRoot();
-
-        int width, height;
-        width = new In(boardFilePath).readLine().length();
-        height = new In(boardFilePath).readAllLines().length;
-        char[] chars = new char[width * height];
-
-        int index1 = 0;
-        In board = new In(boardFilePath);
-        for (String str : board.readAllStrings()) {
-            for (int index2 = 0; index2 < width; index2++) {
-                chars[index1] = str.charAt(index2);
-                boardTrie.addPosition(index1, chars[index1], currentNode, dictTrie);
-                index1++;
-            }
+        dictTrie = new Trie();
+        for (String str : new In(dictPath).readAllStrings()) {
+            dictTrie.addString(str);
         }
 
-        List<TrieDB.Node> nodes = TrieDB.getAllNextNodes(currentNode);
-
-        while (!nodes.isEmpty()) {
-            TrieDB.Node node = nodes.remove(0);
-
-            Set<Integer> neighbors = getNeighbors(node.getPosition(), width, height);
-            for (int neighbor : neighbors) {
-                node.addNextPositionAndCheck(neighbor, chars[neighbor], dictTrie);
-            }
-
-            List<TrieDB.Node> nodeList = TrieDB.getAllNextNodes(node);
-            for (TrieDB.Node nd : nodeList) {
-                nodes.add(0, nd);
-            }
-
-            node.parentCheckAndPrune();
+        int row1 = 0;
+        for (String str : new In(boardFilePath).readAllStrings()) {
+            chars[row1] = str.toCharArray();
+            row1++;
         }
 
-        return boardTrie.getAllStrings(k);
+        for (int column = 0; column < width; column++) {
+            for (int row = 0; row < height; row++) {
+                String nextStr = String.valueOf(chars[column][row]);
+                int result = dictTrie.hasPrefixOrString(nextStr);
+                if (result == -1) {
+                    continue;
+                } else if (result == 1) {
+                    stringSet.add(nextStr);
+                }
+                dfs(column, row, nextStr);
+            }
+        }
+        String[] stringsSorted = RadixSort.sort(stringSet.toArray(new String[0]));
+        k = Math.min(k, stringSet.size());
+        return Arrays.asList(Arrays.copyOfRange(stringsSorted, 0, k));
     }
 
-    static Set<Integer> getNeighbors(int position, int width, int height) {
-        int row, column;
-        row = position / width;
-        column = position - row * width;
+    static void dfs(int column, int row, String prefix) {
+        visited[column][row] = true;
 
-        int maxColumn, maxRow, leftColumn, rightColumn, upRow, downRow;
-        maxColumn = width - 1;
-        maxRow = height - 1;
+        List<Integer> columns = new LinkedList<>(), rows = new LinkedList<>();
+        if (column > 0) {
+            columns.add(column - 1);
+        }
+        if (column < width - 1) {
+            columns.add(column + 1);
+        }
+        columns.add(column);
 
-        leftColumn = column > 0 ? column - 1 : 0;
-        rightColumn = column < maxColumn ? column + 1 : maxColumn;
-        upRow = row > 0 ? row - 1 : 0;
-        downRow = row < maxRow ? row + 1 : maxRow;
+        if (row > 0) {
+            rows.add(row - 1);
+        }
+        if (row < height - 1) {
+            rows.add(row + 1);
+        }
+        rows.add(row);
 
-        Set<Integer> neighbors = new HashSet<>();
-        neighbors.add(upRow * width + leftColumn);
-        neighbors.add(upRow * width + column);
-        neighbors.add(upRow * width + rightColumn);
-        neighbors.add(row * width + leftColumn);
-        neighbors.add(row * width + rightColumn);
-        neighbors.add(downRow * width + leftColumn);
-        neighbors.add(downRow * width + column);
-        neighbors.add(downRow * width + rightColumn);
-
-        neighbors.remove(position);
-
-        return neighbors;
+        for (int c : columns) {
+            for (int r : rows) {
+                if (visited[c][r]) {
+                    continue;
+                }
+                String nextString = prefix + chars[c][r];
+                int result = dictTrie.hasPrefixOrString(nextString);
+                if (result == -1) {
+                    continue;
+                } else if (result == 1) {
+                    stringSet.add(nextString);
+                }
+                dfs(c, r, nextString);
+            }
+        }
+        visited[column][row] = false;
     }
 
-    static void check(int k, In dict, In board) {
+    static void check(int k, In board) {
+        In dict = new In(dictPath);
+
         if (!dict.exists() || !board.exists() || board.isEmpty() || k <= 0) {
             throw new IllegalArgumentException();
         }
 
-        int width = board.readLine().length();
+        String[] boardStr = board.readAllLines();
+        height = boardStr.length;
+        width = boardStr[0].length();
 
-        for (String str : board.readAllLines()) {
+        for (String str : boardStr) {
             if (str.length() != width) {
                 throw new IllegalArgumentException();
             }
