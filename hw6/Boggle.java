@@ -27,10 +27,10 @@ public class Boggle {
             dictTrie.addString(str);
         }
 
-        int row1 = 0;
+        int column1 = 0;
         for (String str : new In(boardFilePath).readAllStrings()) {
-            chars[row1] = str.toCharArray();
-            row1++;
+            chars[column1] = str.toCharArray();
+            column1++;
         }
 
         for (int column = 0; column < width; column++) {
