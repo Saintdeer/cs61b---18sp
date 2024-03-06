@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -299,10 +298,7 @@ public class MapServer {
      * cleaned <code>prefix</code>.
      */
     public static List<String> getLocationsByPrefix(String prefix) {
-        if (prefix == null || prefix.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return graph.names.getStrWithPrefix(GraphDB.cleanString(prefix));
+        return graph.getLocationsByPrefix(prefix);
     }
 
     /**

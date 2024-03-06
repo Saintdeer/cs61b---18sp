@@ -277,6 +277,13 @@ public class GraphDB {
         return validNodes.get(v).lat;
     }
 
+    public List<String> getLocationsByPrefix(String prefix) {
+        if (prefix == null || prefix.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return names.getStrWithPrefix(GraphDB.cleanString(prefix));
+    }
+
     public List<Map<String, Object>> getLocations(String locationName) {
         List<Map<String, Object>> result = new LinkedList<>();
         if (locationName == null || locationName.isEmpty()) {
