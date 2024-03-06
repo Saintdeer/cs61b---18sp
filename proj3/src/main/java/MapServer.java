@@ -319,26 +319,7 @@ public class MapServer {
      * "id" : Number, The id of the node. <br>
      */
     public static List<Map<String, Object>> getLocations(String locationName) {
-        List<Map<String, Object>> result = new LinkedList<>();
-        if (locationName == null || locationName.isEmpty()) {
-            return result;
-        }
-
-        String cleanName = GraphDB.cleanString(locationName);
-        if (!graph.cleanNameToId.containsKey(cleanName)) {
-            return result;
-        }
-        List<Long> ids = graph.cleanNameToId.get(cleanName);
-        for (Long id : ids) {
-            GraphDB.Node nd = graph.nameNodes.get(id);
-            Map<String, Object> info = new HashMap<>();
-            info.put("lat", nd.lat);
-            info.put("lon", nd.lon);
-            info.put("name", nd.info.get("name"));
-            info.put("id", id);
-            result.add(info);
-        }
-        return result;
+        return graph.getLocations(locationName);
     }
 
     /**

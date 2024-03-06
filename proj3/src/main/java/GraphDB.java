@@ -6,12 +6,13 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -274,5 +275,28 @@ public class GraphDB {
      */
     double lat(long v) {
         return validNodes.get(v).lat;
+    }
+
+    public List<Map<String, Object>> getLocations(String locationName) {
+        List<Map<String, Object>> result = new LinkedList<>();
+        if (locationName == null || locationName.isEmpty()) {
+            return result;
+        }
+
+        String cleanName = GraphDB.cleanString(locationName);
+        if (!cleanNameToId.containsKey(cleanName)) {
+            return result;
+        }
+
+        for (Long id : cleanNameToId.get(cleanName)) {
+            GraphDB.Node nd = nameNodes.get(id);
+            Map<String, Object> info = new HashMap<>();
+            info.put("lat", nd.lat);
+            info.put("lon", nd.lon);
+            info.put("name", nd.info.get("name"));
+            info.put("id", id);
+            result.add(info);
+        }
+        return result;
     }
 }
