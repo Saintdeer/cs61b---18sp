@@ -1,6 +1,8 @@
-import org.junit.Test;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Tries {
     Node root;
@@ -15,7 +17,7 @@ public class Tries {
         }
         root.addRest(str);
     }
-    
+
     List<String> getStrWithPrefix(String prefix) {
         if (illegal(prefix)) {
             return null;
@@ -30,11 +32,11 @@ public class Tries {
         Map<Character, Node> rootNext = root.next;
 
         if (rootNext.containsKey(lower)) {
-            result = (rootNext.get(lower).stringWithPrefix(prefix, this));
+            result = (rootNext.get(lower).stringWithPrefix(prefix));
         }
 
         if (rootNext.containsKey(upper)) {
-            List<String> result2 = rootNext.get(upper).stringWithPrefix(prefix, this);
+            List<String> result2 = rootNext.get(upper).stringWithPrefix(prefix);
             if (result.isEmpty()) {
                 result = result2;
             } else {
@@ -49,7 +51,7 @@ public class Tries {
         return str == null || str.isEmpty();
     }
 
-    static class Node {
+    private static class Node {
         char ch;
         boolean isKey = false;
         Node preNode;
@@ -82,10 +84,10 @@ public class Tries {
             }
         }
 
-        List<String> stringWithPrefix(String prefix, Tries t) {
+        List<String> stringWithPrefix(String prefix) {
             List<String> stringsOfSuffix = new ArrayList<>();
 
-            List<Node> prefixNodes = findPrefixNode(prefix, t);
+            List<Node> prefixNodes = findPrefixNode(prefix);
             for (Node prefixNode : prefixNodes) {
                 String prefixCopy = getPrefix("", prefixNode);
                 if (prefixNode.isKey) {
@@ -116,7 +118,7 @@ public class Tries {
             }
         }
 
-        List<Node> findPrefixNode(String prefix, Tries t) {
+        List<Node> findPrefixNode(String prefix) {
             List<Node> result = new LinkedList<>();
 
             if (prefix.length() > 1) {
@@ -134,13 +136,8 @@ public class Tries {
                     second.add(next.get(lower));
                 }
 
-                // I'm not sure if it's necessary
-                if (second.isEmpty() && next.containsKey(' ')) {
-                    result.addAll(next.get(' ').findPrefixNode(prefix, t));
-                }
-
                 for (Node n : second) {
-                    result.addAll(n.findPrefixNode(searchPrefix, t));
+                    result.addAll(n.findPrefixNode(searchPrefix));
                 }
             } else {
                 result.add(this);
@@ -149,17 +146,4 @@ public class Tries {
             return result;
         }
     }
-
-    @Test
-    public void test() {
-        Tries t = new Tries();
-        t.addStr("Monterey Av & The Alameda");
-        t.addStr("Monte Vista Food");
-
-        List<String> strings1 = t.getStrWithPrefix("m");
-
-    }
 }
-
-
-
