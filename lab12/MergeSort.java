@@ -81,10 +81,7 @@ public class MergeSort {
         }
         Queue<Queue<Item>> queOfQues = MergeSort.makeSingleItemQueues(items);
         while (!(queOfQues.size() == 1)) { // Iteration version of MergeSort.
-            int i = 0, n = (queOfQues.size()) / 2;
-            for (; i < n; i++) {
-                queOfQues.enqueue(mergeSortedQueues(queOfQues.dequeue(), queOfQues.dequeue()));
-            }
+            queOfQues.enqueue(mergeSortedQueues(queOfQues.dequeue(), queOfQues.dequeue()));
         }
         return queOfQues.dequeue();
     }
