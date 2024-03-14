@@ -16,7 +16,7 @@ import huglife.Empty;
 /**
  * Tests the plip class
  *
- * @authr FIXME
+ * @authr stain
  */
 
 public class TestPlip {
