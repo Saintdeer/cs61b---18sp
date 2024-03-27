@@ -40,14 +40,12 @@ public class GraphDB {
     Set<Long> ids = new HashSet<>();
 
     /* names in nameNodes*/
-    Tries names = new Tries();
+    Tries nodeNames = new Tries();
     Map<String, List<Long>> cleanNameToId = new HashMap<>();
 
     static class Node {
         long id;
         double lon, lat;
-        double moves = Double.MAX_VALUE, distanceToGoal = 0;
-        long preId = Long.MAX_VALUE, startId = Long.MAX_VALUE, destId = Long.MAX_VALUE;
         Map<String, String> info = new HashMap<>();
         Set<Long> adjacent = new HashSet<>();
         Set<String> way = new HashSet<>();
@@ -71,6 +69,7 @@ public class GraphDB {
         and add adjacent relationships on this way*/
     void addValidNodesOfWay(Way way) {
         Iterable<Long> nodeIdIterable = way.nodesIdOfWay;
+        String wayName = way.info.get("name");
 
         /* if number of nodes of the way less than 2, there's no edges */
         int count = 0;
@@ -84,6 +83,30 @@ public class GraphDB {
             return;
         }
 
+        if (wayName != null) {
+            String cleanWayName = GraphDB.cleanString(wayName);
+            // nodeNames.addStr(cleanWayName);
+
+            List<Long> longList = new ArrayList<>();
+            for (Long nodeId : nodeIdIterable) {
+                Node n = rowNodes.get(nodeId);
+                if (n.lon < MapServer.ROOT_ULLON || n.lon > MapServer.ROOT_LRLON
+                    || n.lat < MapServer.ROOT_LRLAT || n.lat > MapServer.ROOT_ULLAT) {
+                    continue;
+                }
+                longList.add(nodeId);
+                nameNodes.put(nodeId, n);
+                n.info.put("name", cleanWayName);
+            }
+
+            if (!longList.isEmpty()) {
+                if (!cleanNameToId.containsKey(cleanWayName)) {
+                    cleanNameToId.put(cleanWayName, new ArrayList<>());
+                }
+                cleanNameToId.get(cleanWayName).addAll(longList);
+            }
+        }
+
         /* only nodes with relationships considered valid */
         Node oldNode = null;
         for (Long nodeId : nodeIdIterable) {
@@ -92,7 +115,6 @@ public class GraphDB {
             validNodes.put(nodeId, node);
             node.addAdjacent(oldNode);
 
-            String wayName = way.info.get("name");
             if (wayName != null) {
                 node.way.add(wayName);
             }
@@ -281,7 +303,10 @@ public class GraphDB {
         if (prefix == null || prefix.isEmpty()) {
             return new ArrayList<>();
         }
-        return names.getStrWithPrefix(GraphDB.cleanString(prefix));
+
+        String clean = GraphDB.cleanString(prefix);
+
+        return nodeNames.getStrWithPrefix(clean);
     }
 
     public List<Map<String, Object>> getLocations(String locationName) {

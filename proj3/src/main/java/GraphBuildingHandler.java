@@ -2,7 +2,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Arrays;
 
 /**
  * Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
@@ -37,8 +41,8 @@ public class GraphBuildingHandler extends DefaultHandler {
     private String activeState = "";
     private final GraphDB g;
 
-    private GraphDB.Node currentNode = null;
-    private GraphDB.Way currentWay = null;
+    private GraphDB.Node currentNode;
+    private GraphDB.Way currentWay;
 
     /**
      * Create a new GraphBuildingHandler.
@@ -124,7 +128,6 @@ public class GraphBuildingHandler extends DefaultHandler {
             } else if (k.equals("name")) {
                 //System.out.println("Way Name: " + v);
                 currentWay.info.put(k, v);
-
             }
 //            System.out.println("Tag with k=" + k + ", v=" + v + ".");
         } else if (activeState.equals("node") && qName.equals("tag") && attributes.getValue("k")
@@ -137,7 +140,7 @@ public class GraphBuildingHandler extends DefaultHandler {
 //            System.out.println("Node's name: " + attributes.getValue("v"));
             String nodeName = attributes.getValue("v");
             currentNode.info.put("name", nodeName);
-            g.names.addStr(nodeName);
+            g.nodeNames.addStr(nodeName);
 
             String cleanNodeName = GraphDB.cleanString(nodeName);
             if (g.cleanNameToId.containsKey(cleanNodeName)) {

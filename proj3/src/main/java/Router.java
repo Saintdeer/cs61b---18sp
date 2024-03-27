@@ -1,9 +1,12 @@
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
-import java.util.PriorityQueue;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
 import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,98 +34,57 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-
         long startId = g.closest(stlon, stlat), destId = g.closest(destlon, destlat);
+        Map<Long, Double> idToMinMoves = new HashMap<>();
+        PriorityQueue<SearchNode> pq = new PriorityQueue<>(
+                Comparator.comparingDouble(node -> node.moves + node.distanceToGoal));
 
-        long endId = spHelper(g, startId, destId);
+        SearchNode startNode = new SearchNode(
+                g.getNode(startId), 0, g.distance(startId, destId), null);
+        idToMinMoves.put(startId, 0.0);
+        pq.add(startNode);
 
-        return findPath(g, endId); // done
-    }
-
-    private static long spHelper(GraphDB g, long startId, long destId) {
-        PriorityQueue<GraphDB.Node> minPQ = new PriorityQueue<>(new NDComparator());
-
-        GraphDB.Node startNode = g.getNode(startId),
-                destNode = g.getNode(destId);
-        double destNdLon = destNode.lon,
-                destNdLat = destNode.lat;
-
-        startNode.preId = Long.MAX_VALUE;
-        startNode.distanceToGoal = GraphDB.distance(
-                startNode.lon, startNode.lat, destNdLon, destNdLat);
-        startNode.startId = startId;
-        startNode.destId = destId;
-        startNode.moves = 0;
-
-        minPQ.add(startNode);
-        long previousId = Long.MAX_VALUE;
-        long endId = startId;
-
-        while (true) {
-            if (minPQ.isEmpty()) {
+        long lastNodeId = Long.MAX_VALUE;
+        SearchNode destNode = null;
+        while (!pq.isEmpty()) {
+            SearchNode node = pq.remove();
+            long parentId = node.id;
+            if (parentId == destId) {
+                destNode = node;
                 break;
             }
-            GraphDB.Node min = minPQ.remove();
-            long minId = min.id;
-
-            if (g.getNode(endId).distanceToGoal > min.distanceToGoal) {
-                endId = minId;
-            }
-
-            if (minId == destId) {
-                break;
-            }
-            for (Long neighborId : min.adjacent) {
-                GraphDB.Node neighborNode = g.getNode(neighborId);
-
-                if (neighborId == previousId) {
-                    continue;
+            for (long id : g.getNode(parentId).adjacent) {
+                if (id != lastNodeId) {
+                    double newMoves = idToMinMoves.get(parentId) + g.distance(parentId, id);
+                    if (idToMinMoves.containsKey(id) && newMoves >= idToMinMoves.get(id)) {
+                        continue;
+                    }
+                    idToMinMoves.put(id, newMoves);
+                    pq.add(new SearchNode(g.getNode(id), newMoves, g.distance(id, destId), node));
                 }
-
-                double ndLon = neighborNode.lon,
-                        ndLat = neighborNode.lat;
-                double moves = min.moves + GraphDB.distance(min.lon, min.lat, ndLon, ndLat);
-                if (neighborNode.moves < moves
-                        && startId == neighborNode.startId
-                        && destId == neighborNode.destId) {
-                    continue;
-                }
-                neighborNode.moves = moves;
-                neighborNode.distanceToGoal = GraphDB.distance(ndLon, ndLat, destNdLon, destNdLat);
-                neighborNode.preId = min.id;
-                neighborNode.startId = startId;
-                neighborNode.destId = destId;
-
-                minPQ.add(neighborNode);
             }
-            previousId = minId;
+
+            lastNodeId = parentId;
         }
-        return endId;
+
+        List<Long> result = new LinkedList<>();
+        while (destNode != null) {
+            result.add(0, destNode.id);
+            destNode = destNode.pre;
+        }
+        return result;
     }
 
-    private static List<Long> findPath(GraphDB g, long destId) {
-        List<Long> path = new ArrayList<>();
-        while (destId != Long.MAX_VALUE) {
-            path.add(0, destId);
-            destId = g.getNode(destId).preId;
-        }
-        return path;
-    }
+    private static class SearchNode {
+        final long id;
+        final double moves, distanceToGoal;
+        SearchNode pre;
 
-    private static class NDComparator implements Comparator<GraphDB.Node> {
-        @Override
-        public int compare(GraphDB.Node o1, GraphDB.Node o2) {
-            double ob1 = o1.moves + o1.distanceToGoal,
-                    ob2 = o2.moves + o2.distanceToGoal;
-
-            double result = ob1 - ob2;
-            if (result > 0) {
-                return 1;
-            } else if (result == 0) {
-                return 0;
-            } else {
-                return -1;
-            }
+        SearchNode(GraphDB.Node node, double moves, double distanceToGoal, SearchNode pre) {
+            id = node.id;
+            this.moves = moves;
+            this.distanceToGoal = distanceToGoal;
+            this.pre = pre;
         }
     }
 
@@ -136,8 +98,6 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        int i = 1;
-
         List<NavigationDirection> directionList = new ArrayList<>();
 
         long idOne = route.get(0), idTwo = route.get(1);
@@ -195,7 +155,6 @@ public class Router {
 
             }
 
-            i++;
             NavigationDirection lastNd = directionList.get(directionList.size() - 1);
             lastNd.distance += g.distance(preId, id);
             if (currentCommonWay.size() == 1) {
