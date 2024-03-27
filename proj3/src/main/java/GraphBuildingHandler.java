@@ -2,7 +2,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
@@ -143,13 +142,8 @@ public class GraphBuildingHandler extends DefaultHandler {
             g.nodeNames.addStr(nodeName);
 
             String cleanNodeName = GraphDB.cleanString(nodeName);
-            if (g.cleanNameToId.containsKey(cleanNodeName)) {
-                g.cleanNameToId.get(cleanNodeName).add(currentNode.id);
-            } else {
-                List<Long> lst = new ArrayList<>();
-                lst.add(currentNode.id);
-                g.cleanNameToId.put(cleanNodeName, lst);
-            }
+            g.cleanNameToId.putIfAbsent(cleanNodeName, new ArrayList<>());
+            g.cleanNameToId.get(cleanNodeName).add(currentNode.id);
         }
     }
 

@@ -68,44 +68,13 @@ public class GraphDB {
     /* add nodes of the way to graphdb when way is valid,
         and add adjacent relationships on this way*/
     void addValidNodesOfWay(Way way) {
-        Iterable<Long> nodeIdIterable = way.nodesIdOfWay;
-        String wayName = way.info.get("name");
-
         /* if number of nodes of the way less than 2, there's no edges */
-        int count = 0;
-        for (Long ignored : nodeIdIterable) {
-            count++;
-            if (count > 1) {
-                break;
-            }
-        }
-        if (count < 2) {
+        if (way.nodesIdOfWay.size() < 2) {
             return;
         }
 
-        if (wayName != null) {
-            String cleanWayName = GraphDB.cleanString(wayName);
-            // nodeNames.addStr(cleanWayName);
-
-            List<Long> longList = new ArrayList<>();
-            for (Long nodeId : nodeIdIterable) {
-                Node n = rowNodes.get(nodeId);
-                if (n.lon < MapServer.ROOT_ULLON || n.lon > MapServer.ROOT_LRLON
-                    || n.lat < MapServer.ROOT_LRLAT || n.lat > MapServer.ROOT_ULLAT) {
-                    continue;
-                }
-                longList.add(nodeId);
-                nameNodes.put(nodeId, n);
-                n.info.put("name", cleanWayName);
-            }
-
-            if (!longList.isEmpty()) {
-                if (!cleanNameToId.containsKey(cleanWayName)) {
-                    cleanNameToId.put(cleanWayName, new ArrayList<>());
-                }
-                cleanNameToId.get(cleanWayName).addAll(longList);
-            }
-        }
+        Iterable<Long> nodeIdIterable = way.nodesIdOfWay;
+        String wayName = way.info.get("name");
 
         /* only nodes with relationships considered valid */
         Node oldNode = null;
@@ -321,7 +290,7 @@ public class GraphDB {
         }
 
         for (Long id : cleanNameToId.get(cleanName)) {
-            GraphDB.Node nd = nameNodes.get(id);
+            Node nd = nameNodes.get(id);
             Map<String, Object> info = new HashMap<>();
             info.put("lat", nd.lat);
             info.put("lon", nd.lon);
