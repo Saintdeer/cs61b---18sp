@@ -280,7 +280,7 @@ public class GraphDB {
 
     public List<Map<String, Object>> getLocations(String locationName) {
         List<Map<String, Object>> result = new LinkedList<>();
-        if (locationName == null || locationName.isEmpty()) {
+        if (locationName == null) {
             return result;
         }
 
