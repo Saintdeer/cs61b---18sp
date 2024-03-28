@@ -35,57 +35,63 @@ public class Router {
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
         long startId = g.closest(stlon, stlat), destId = g.closest(destlon, destlat);
-        Map<Long, Double> idToMinMoves = new HashMap<>();
-        PriorityQueue<SearchNode> pq = new PriorityQueue<>(
-                Comparator.comparingDouble(node -> node.moves + node.distanceToGoal));
 
-        SearchNode startNode = new SearchNode(
-                g.getNode(startId), 0, g.distance(startId, destId), null);
+        /* map node.id to minMoves*/
+        Map<Long, Double> idToMinMoves = new HashMap<>();
+
+        /* map node.id to it's parent corresponds to minMoves */
+        Map<Long, Long> idToParent = new HashMap<>();
+
+        PriorityQueue<GraphDB.Node> pq = new PriorityQueue<>(
+                Comparator.comparingDouble(node ->
+                        idToMinMoves.get(node.id) + g.distance(node.id, destId)));
+
         idToMinMoves.put(startId, 0.0);
-        pq.add(startNode);
+        idToParent.put(startId, Long.MAX_VALUE);
+        pq.add(g.getNode(startId));
 
         long lastNodeId = Long.MAX_VALUE;
-        SearchNode destNode = null;
+        long realDestId = startId;
         while (!pq.isEmpty()) {
-            SearchNode node = pq.remove();
-            long parentId = node.id;
+            GraphDB.Node parentNode = pq.remove();
+            long parentId = parentNode.id;
+
+            /* record nearest nodeId to destId, in case there's no way to destId */
+            if (g.distance(realDestId, destId) > g.distance(parentId, destId)) {
+                realDestId = parentId;
+            }
+
             if (parentId == destId) {
-                destNode = node;
                 break;
             }
             for (long id : g.getNode(parentId).adjacent) {
+
+                /* children can't be their own parents */
                 if (id != lastNodeId) {
-                    double newMoves = idToMinMoves.get(parentId) + g.distance(parentId, id);
-                    if (idToMinMoves.containsKey(id) && newMoves >= idToMinMoves.get(id)) {
+                    double parentMinMoves, distFromIdToParent, idMoves;
+                    distFromIdToParent = g.distance(parentId, id);
+                    parentMinMoves = idToMinMoves.get(parentId);
+                    idMoves = parentMinMoves + distFromIdToParent;
+
+                    if (idToMinMoves.containsKey(id) && idMoves >= idToMinMoves.get(id)) {
                         continue;
                     }
-                    idToMinMoves.put(id, newMoves);
-                    pq.add(new SearchNode(g.getNode(id), newMoves, g.distance(id, destId), node));
+
+                    idToMinMoves.put(id, idMoves);
+                    idToParent.put(id, parentId);
+                    pq.add(g.getNode(id));
                 }
             }
-
             lastNodeId = parentId;
         }
 
         List<Long> result = new LinkedList<>();
-        while (destNode != null) {
-            result.add(0, destNode.id);
-            destNode = destNode.pre;
+        long id = realDestId;
+        while (id != Long.MAX_VALUE) {
+            result.add(0, id);
+            id = idToParent.get(id);
         }
         return result;
-    }
-
-    private static class SearchNode {
-        final long id;
-        final double moves, distanceToGoal;
-        SearchNode pre;
-
-        SearchNode(GraphDB.Node node, double moves, double distanceToGoal, SearchNode pre) {
-            id = node.id;
-            this.moves = moves;
-            this.distanceToGoal = distanceToGoal;
-            this.pre = pre;
-        }
     }
 
     /**
