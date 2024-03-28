@@ -39,21 +39,31 @@ public class Router {
         /* map node.id to minMoves*/
         Map<Long, Double> idToMinMoves = new HashMap<>();
 
-        PriorityQueue<SearchNode> pq = new PriorityQueue<>(
-                Comparator.comparingDouble(node -> node.priority));
+        /* map node.id to it's parent corresponds to minMoves */
+        Map<Long, Long> idToParent = new HashMap<>();
+
+        /* map node.id to it's distanceToGoal */
+        /* be used mainly for comparing on pq, avoiding extra calculating */
+        Map<Long, Double> idToDistToGoal = new HashMap<>();
+
+        PriorityQueue<GraphDB.Node> pq = new PriorityQueue<>(
+                Comparator.comparingDouble(node ->
+                        idToMinMoves.get(node.id) + idToDistToGoal.get(node.id)));
 
         idToMinMoves.put(startId, 0.0);
-        SearchNode startNode = new SearchNode(startId, 0, g.distance(startId, destId), null);
-        pq.add(startNode);
+        idToParent.put(startId, Long.MAX_VALUE);
+        idToDistToGoal.put(startId, g.distance(startId, destId));
+        pq.add(g.getNode(startId));
 
         long lastNodeId = Long.MAX_VALUE;
-        SearchNode realDestNode = startNode;
+        long realDestId = startId;
         while (!pq.isEmpty()) {
-            SearchNode parentNode = pq.remove();
+            GraphDB.Node parentNode = pq.remove();
             long parentId = parentNode.id;
 
-            if (parentNode.distanceToGoal < realDestNode.distanceToGoal) {
-                realDestNode = parentNode;
+            /* record nearest nodeId to destId, in case there's no way to destId */
+            if (idToDistToGoal.get(realDestId) > idToDistToGoal.get(parentId)) {
+                realDestId = parentId;
             }
 
             if (parentId == destId) {
@@ -68,36 +78,29 @@ public class Router {
                     parentMinMoves = idToMinMoves.get(parentId);
                     idMoves = parentMinMoves + distFromIdToParent;
 
-                    if (idToMinMoves.containsKey(id) && idMoves >= idToMinMoves.get(id)) {
+                    boolean containsKey = idToMinMoves.containsKey(id);
+                    if (containsKey && idMoves >= idToMinMoves.get(id)) {
                         continue;
                     }
 
+                    if (!containsKey) {
+                        idToDistToGoal.put(id, g.distance(id, destId));
+                    }
                     idToMinMoves.put(id, idMoves);
-                    pq.add(new SearchNode(id, idMoves, g.distance(id, destId), parentNode));
+                    idToParent.put(id, parentId);
+                    pq.add(g.getNode(id));
                 }
             }
             lastNodeId = parentId;
         }
 
         List<Long> result = new LinkedList<>();
-        while (realDestNode != null) {
-            result.add(0, realDestNode.id);
-            realDestNode = realDestNode.pre;
+        long id = realDestId;
+        while (id != Long.MAX_VALUE) {
+            result.add(0, id);
+            id = idToParent.get(id);
         }
         return result;
-    }
-
-    private static class SearchNode {
-        final long id;
-        final double priority, distanceToGoal;
-        SearchNode pre;
-
-        SearchNode(long id, double moves, double distanceToGoal, SearchNode pre) {
-            this.id = id;
-            priority = moves + distanceToGoal;
-            this.distanceToGoal = distanceToGoal;
-            this.pre = pre;
-        }
     }
 
     /**
