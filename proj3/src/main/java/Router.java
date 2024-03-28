@@ -47,7 +47,7 @@ public class Router {
 
         PriorityQueue<GraphDB.Node> pq = new PriorityQueue<>(
                 Comparator.comparingDouble(node ->
-                        idToMinMoves.get(node.id) + g.distance(node.id, destId)));
+                        idToMinMoves.get(node.id) + idToDistToGoal.get(node.id)));
 
         idToMinMoves.put(startId, 0.0);
         idToParent.put(startId, Long.MAX_VALUE);
