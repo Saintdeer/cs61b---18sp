@@ -42,12 +42,16 @@ public class Router {
         /* map node.id to it's parent corresponds to minMoves */
         Map<Long, Long> idToParent = new HashMap<>();
 
+        /* map node.id to it's distanceToGoal */
+        Map<Long, Double> idToDistToGoal = new HashMap<>();
+
         PriorityQueue<GraphDB.Node> pq = new PriorityQueue<>(
                 Comparator.comparingDouble(node ->
                         idToMinMoves.get(node.id) + g.distance(node.id, destId)));
 
         idToMinMoves.put(startId, 0.0);
         idToParent.put(startId, Long.MAX_VALUE);
+        idToDistToGoal.put(startId, g.distance(startId, destId));
         pq.add(g.getNode(startId));
 
         long lastNodeId = Long.MAX_VALUE;
@@ -57,7 +61,7 @@ public class Router {
             long parentId = parentNode.id;
 
             /* record nearest nodeId to destId, in case there's no way to destId */
-            if (g.distance(realDestId, destId) > g.distance(parentId, destId)) {
+            if (idToDistToGoal.get(realDestId) > idToDistToGoal.get(parentId)) {
                 realDestId = parentId;
             }
 
@@ -73,10 +77,14 @@ public class Router {
                     parentMinMoves = idToMinMoves.get(parentId);
                     idMoves = parentMinMoves + distFromIdToParent;
 
-                    if (idToMinMoves.containsKey(id) && idMoves >= idToMinMoves.get(id)) {
+                    boolean containsKey = idToMinMoves.containsKey(id);
+                    if (containsKey && idMoves >= idToMinMoves.get(id)) {
                         continue;
                     }
 
+                    if (!containsKey) {
+                        idToDistToGoal.put(id, g.distance(id, destId));
+                    }
                     idToMinMoves.put(id, idMoves);
                     idToParent.put(id, parentId);
                     pq.add(g.getNode(id));
