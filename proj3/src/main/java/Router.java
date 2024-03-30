@@ -46,6 +46,9 @@ public class Router {
         /* be used mainly for comparing on pq, avoiding extra calculating */
         Map<Long, Double> idToDistToGoal = new HashMap<>();
 
+        /* id of node that has been removed from pq */
+        Set<Long> removedNodeId = new HashSet<>();
+
         PriorityQueue<GraphDB.Node> pq = new PriorityQueue<>(
                 Comparator.comparingDouble(node ->
                         idToMinMoves.get(node.id) + idToDistToGoal.get(node.id)));
@@ -55,13 +58,12 @@ public class Router {
         idToDistToGoal.put(startId, g.distance(startId, destId));
         pq.add(g.getNode(startId));
 
-        long lastNodeId = Long.MAX_VALUE;
         long realDestId = startId;
         while (!pq.isEmpty()) {
             GraphDB.Node parentNode = pq.remove();
             long parentId = parentNode.id;
 
-            /* record nearest nodeId to destId, in case there's no way to destId */
+            // record nearest nodeId to destId, in case there's no way to destId
             if (idToDistToGoal.get(realDestId) > idToDistToGoal.get(parentId)) {
                 realDestId = parentId;
             }
@@ -69,29 +71,29 @@ public class Router {
             if (parentId == destId) {
                 break;
             }
+
+            // if heuristic function <= actual cost,
+            // shortest path to removed node has been found
+            if (removedNodeId.contains(parentId)) {
+                continue;
+            }
+            removedNodeId.add(parentId);
+
             for (long id : g.getNode(parentId).adjacent) {
 
-                /* children can't be their own parents */
-                if (id != lastNodeId) {
-                    double parentMinMoves, distFromIdToParent, idMoves;
-                    distFromIdToParent = g.distance(parentId, id);
-                    parentMinMoves = idToMinMoves.get(parentId);
-                    idMoves = parentMinMoves + distFromIdToParent;
-
-                    boolean containsKey = idToMinMoves.containsKey(id);
-                    if (containsKey && idMoves >= idToMinMoves.get(id)) {
-                        continue;
-                    }
-
-                    if (!containsKey) {
-                        idToDistToGoal.put(id, g.distance(id, destId));
-                    }
-                    idToMinMoves.put(id, idMoves);
-                    idToParent.put(id, parentId);
-                    pq.add(g.getNode(id));
+                double idMoves = idToMinMoves.get(parentId) + g.distance(parentId, id);
+                boolean containsKey = idToMinMoves.containsKey(id);
+                if (containsKey && idMoves >= idToMinMoves.get(id)) {
+                    continue;
                 }
+                if (!containsKey) {
+                    idToDistToGoal.put(id, g.distance(id, destId));
+                }
+
+                idToMinMoves.put(id, idMoves);
+                idToParent.put(id, parentId);
+                pq.add(g.getNode(id));
             }
-            lastNodeId = parentId;
         }
 
         List<Long> result = new LinkedList<>();
